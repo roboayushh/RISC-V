@@ -29,15 +29,18 @@ module data_memory #(
     output reg  [DATA_WIDTH-1:0] read_data    // Loaded data when MemRead = 1, else 0
 );
 
-    localparam INDEX_WIDTH = $clog2(DEPTH); // Word-index width (8 bits for DEPTH = 256).
+    // A one-word memory still needs a nonzero index width.
+    localparam INDEX_WIDTH = (DEPTH > 1) ? $clog2(DEPTH) : 1;
 
     reg [DATA_WIDTH-1:0] memory [0:DEPTH-1];
     integer i;
 
     // Word index derived from the byte address (drop the 2 byte-offset bits).
     wire                   aligned   = (address[1:0] == 2'b00);
-    wire                   in_range  = (address[31:2] < DEPTH);
-    wire [INDEX_WIDTH-1:0] word_index = address[INDEX_WIDTH+1:2];
+    wire                   in_range  = ({2'b00, address[31:2]} < DEPTH);
+    wire [INDEX_WIDTH-1:0] word_index =
+        (DEPTH == 1) ? {INDEX_WIDTH{1'b0}} : address[INDEX_WIDTH+1:2];
+    wire [DATA_WIDTH-1:0] selected_word = memory[word_index];
 
     // Deterministic initialization for simulation.
     initial begin
@@ -48,7 +51,7 @@ module data_memory #(
     // Asynchronous read: only when enabled, aligned, and in range; else 0.
     always @(*) begin
         if (MemRead && aligned && in_range)
-            read_data = memory[word_index];
+            read_data = selected_word;
         else
             read_data = {DATA_WIDTH{1'b0}};
     end

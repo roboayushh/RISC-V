@@ -31,6 +31,10 @@ run_test tb_rv32i_phase1_core \
     rtl/control_unit.v rtl/alu_control.v rtl/immediate_generator.v \
     rtl/alu_src_mux.v rtl/register_file.v rtl/alu.v rtl/rv32i_phase1_core.v
 
+run_test tb_memory_depth_one rtl/instruction_memory.v rtl/data_memory.v
+
 printf 'PHASE 1 TESTS PASSED\n'
-printf 'Waveforms: %s/build/tb_control_unit.vcd and %s/build/tb_rv32i_phase1_core.vcd\n' \
-    "$repo_root" "$repo_root"
+printf '%s\n' 'Waveforms:' \
+    "$repo_root/build/tb_control_unit.vcd" \
+    "$repo_root/build/tb_rv32i_phase1_core.vcd" \
+    "$repo_root/build/tb_memory_depth_one.vcd"
