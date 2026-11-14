@@ -203,7 +203,7 @@ Verification highlights:
 
 | Component | Owner | Status |
 |---|---|---|
-| Immediate generator and multiplexers | Saumya | Planned |
+| Immediate generator and multiplexers | Saumya | Implemented (see [`docs/saumya_modules.md`](docs/saumya_modules.md)) |
 | Control unit | Samiksha | Planned |
 
 Phase 1 also includes the Phase 1 deliverables required by the course: an IEEE-format
@@ -232,6 +232,9 @@ repository with version history reflecting each member's contributions.
 | `rtl/alu.v`, `rtl/alu_control.v` | Ayush |
 | `testbench/tb_alu.v`, `testbench/tb_alu_control.v` | Ayush |
 | `scripts/run_alu_tests.sh`, `docs/alu_guide.md` | Ayush |
+| `rtl/immediate_generator.v`, `rtl/alu_src_mux.v`, `rtl/writeback_mux.v`, `rtl/next_pc_mux.v`, `rtl/branch_target.v` | Saumya |
+| `testbench/tb_immediate_generator.v`, `testbench/tb_alu_src_mux.v`, `testbench/tb_writeback_mux.v`, `testbench/tb_next_pc_mux.v`, `testbench/tb_branch_target.v` | Saumya |
+| `scripts/run_saumya_tests.sh`, `docs/saumya_modules.md` | Saumya |
 
 ---
 
