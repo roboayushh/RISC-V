@@ -1,0 +1,4 @@
+# Generated simulator outputs and waveform files
+build/
+*.vcd
+*.vvp
