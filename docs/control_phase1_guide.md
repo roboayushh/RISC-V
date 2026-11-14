@@ -48,7 +48,7 @@ bash scripts/run_phase1_tests.sh
 ```
 
 The testbenches stop with a nonzero exit on a mismatch. A successful run prints
-`CONTROL UNIT TEST PASSED (20 cases)`, `PHASE 1 ARITHMETIC TEST PASSED`, and
+`CONTROL UNIT TEST PASSED (20 cases)`, `PHASE 1 ARITHMETIC TEST PASSED`, `ONE-WORD MEMORY TEST PASSED`, and
 `PHASE 1 TESTS PASSED`.
 
 The [demo program](../programs/phase1_arithmetic.hex) starts with the seven
@@ -70,11 +70,10 @@ writeback, disabled memory writeback for LW, an unsupported MUL encoding, and
 AND, OR, and XOR with overlapping operands. The testbench also checks reset,
 PC progression, and the NOP fetched beyond the program.
 
-The fetch, storage, ALU, and operand selection suites also passed. The control
-unit passed Verilator `-Wall`, and Yosys synthesis checks passed for the
-control unit and arithmetic core. Icarus reports an array sensitivity warning
-in the instruction memory. Integrated Verilator lint reports unused instruction
-bits in the existing immediate generator.
+All five simulation suites passed. Run `bash scripts/check_phase1_rtl.sh`
+to reproduce strict Verilator lint and Yosys synthesis, latch and structural
+checks for all 14 RTL modules. The Phase 1 runner also tests one-word memory
+read, write and address bounds.
 
 ## View the waveforms
 
