@@ -47,6 +47,9 @@ module immediate_generator (
     // Sign bit (bit 31) is the MSB of every RV32I immediate format.
     wire sign = instruction[31];
 
+    // Register and opcode fields are consumed by other datapath modules.
+    wire [14:0] unused_instruction_fields = {instruction[19:12], instruction[6:0]};
+
     // I-type:  imm[11:0]  = instruction[31:20]
     // S-type:  imm[11:5]  = instruction[31:25]   imm[4:0] = instruction[11:7]
     // B-type:  imm[12]    = instruction[31]
