@@ -150,33 +150,40 @@ Surfer supports VCD files and can open a waveform directly from Terminal. GTKWav
 
 ---
 
-## 3. Extract the project ZIP
+## 3. Get the project files
 
-1. Locate `rv32i_ankit_phase1.zip` in Finder (usually in **Downloads**).
-2. Double-click the ZIP file to extract it.
-3. You should get a folder named `rv32i_ankit`.
-4. Keep the extracted folder together. Do not move individual Verilog files out of their folders because the compile commands and instruction-image path rely on this layout.
+1. Clone or download the project repository (folder name `RISC-V`).
+2. Keep the folder layout intact. Do not move individual Verilog files out of their
+   folders because the compile commands and instruction-image path rely on this layout.
 
-The folder should look like this:
+The repository uses a shared flat layout (the fetch-path files are highlighted):
 
 ```text
-rv32i_ankit/
-├── .gitignore
+RISC-V/
 ├── README.md
+├── .gitignore
 ├── docs/
-│   └── architecture.md
+│   ├── architecture.md
+│   ├── fetch_path_guide.md
+│   ├── storage_guide.md
+│   └── storage_modules.md
 ├── programs/
-│   └── test_program.hex
+│   └── test_program.hex          # fetch path
 ├── rtl/
-│   ├── instruction_memory.v
-│   ├── program_counter.v
-│   └── rv32i_core.v
+│   ├── program_counter.v         # fetch path
+│   ├── instruction_memory.v      # fetch path
+│   ├── rv32i_core.v              # fetch path
+│   ├── register_file.v
+│   └── data_memory.v
 ├── scripts/
-│   └── run_tests.sh
+│   ├── run_fetch_tests.sh        # fetch path
+│   └── run_storage_tests.sh
 └── testbench/
-    ├── tb_instruction_memory.v
-    ├── tb_program_counter.v
-    └── tb_rv32i_core.v
+    ├── tb_program_counter.v      # fetch path
+    ├── tb_instruction_memory.v   # fetch path
+    ├── tb_rv32i_core.v           # fetch path
+    ├── tb_register_file.v
+    └── tb_data_memory.v
 ```
 
 The `build/` folder is generated automatically when you run the tests. It contains compiled simulation files and waveform files.
@@ -187,13 +194,13 @@ The `build/` folder is generated automatically when you run the tests. It contai
 
 ### Option A — Open it from Terminal
 
-In Terminal, change directory to the extracted project folder. For example, if it is in Downloads:
+In Terminal, change directory to the project folder. For example:
 
 ```bash
-cd ~/Downloads/rv32i_ankit
+cd /path/to/RISC-V
 ```
 
-If you extracted it somewhere else, replace the path with that location. A simple alternative is to type `cd ` (include a space) in Terminal, drag the `rv32i_ankit` folder from Finder into the Terminal window, and press Enter.
+Replace the path with wherever you cloned the repository. A simple alternative is to type `cd ` (include a space) in Terminal, drag the `RISC-V` folder from Finder into the Terminal window, and press Enter.
 
 Confirm that you are in the correct directory:
 
@@ -214,7 +221,7 @@ code .
 
 1. Open VS Code.
 2. Select **File → Open Folder**.
-3. Select the extracted `rv32i_ankit` folder (the folder containing `README.md`).
+3. Select the `RISC-V` folder (the repository root containing `README.md`).
 4. Select **Open**.
 
 ### Open the integrated terminal
@@ -232,7 +239,7 @@ This is the easiest way to compile and test all your modules.
 From the project root, run:
 
 ```bash
-bash scripts/run_tests.sh
+bash scripts/run_fetch_tests.sh
 ```
 
 The script will:
@@ -424,7 +431,7 @@ The Program Counter itself does not calculate `PC + 4`; that calculation is in `
 - Outputs the current `pc` and fetched `instruction`.
 - Does not yet contain decode, execute, branch, jump, memory-write, or register-write logic.
 
-For a block diagram and design assumptions, see [`docs/architecture.md`](docs/architecture.md).
+For a block diagram and design assumptions, see [`architecture.md`](architecture.md).
 
 ---
 
@@ -471,7 +478,7 @@ Then rerun the test.
 The compile command is missing a required RTL source file. Use the full commands in Section 6, or run the complete script:
 
 ```bash
-bash scripts/run_tests.sh
+bash scripts/run_fetch_tests.sh
 ```
 
 ### The waveform file does not exist
@@ -480,7 +487,7 @@ Run the corresponding testbench first. The testbench creates the `.vcd` file dur
 
 ```bash
 mkdir -p build
-bash scripts/run_tests.sh
+bash scripts/run_fetch_tests.sh
 ```
 
 ### `surfer: command not found`
@@ -504,13 +511,13 @@ Do not treat the simulation as successful. Read the `expected` and `got` values 
 Once Homebrew, Icarus Verilog, and the project folder are ready, the normal workflow is only:
 
 ```bash
-cd /path/to/rv32i_ankit
+cd /path/to/RISC-V
 code .
-bash scripts/run_tests.sh
+bash scripts/run_fetch_tests.sh
 surfer build/tb_rv32i_core.vcd
 ```
 
-Replace `/path/to/rv32i_ankit` with the actual location of the extracted folder. The last command is optional and opens the integrated waveform.
+Replace `/path/to/RISC-V` with the actual location of the extracted folder. The last command is optional and opens the integrated waveform.
 
 ---
 
