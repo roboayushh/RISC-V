@@ -13,8 +13,11 @@ module control_unit (
     output reg  [1:0] ALUOp,
     output reg  [1:0] ImmSrc
 );
-    localparam [6:0] OP_RTYPE = 7'b0110011;
-    localparam [6:0] OP_IMM   = 7'b0010011;
+    localparam [6:0] OP_RTYPE  = 7'b0110011;
+    localparam [6:0] OP_IMM    = 7'b0010011;
+    localparam [6:0] OP_LOAD   = 7'b0000011;
+    localparam [6:0] OP_STORE  = 7'b0100011;
+    localparam [6:0] OP_BRANCH = 7'b1100011;
 
     always @(*) begin
         // Safe defaults for unsupported encodings.
@@ -41,6 +44,7 @@ module control_unit (
                     default: begin end
                 endcase
             end
+
             OP_IMM: begin
                 if (funct3 == 3'b000) begin // ADDI
                     RegWrite = 1'b1;
@@ -49,6 +53,35 @@ module control_unit (
                     ImmSrc   = 2'b00;
                 end
             end
+
+            OP_LOAD: begin
+                if (funct3 == 3'b010) begin // LW
+                    RegWrite  = 1'b1;
+                    ALUSrc    = 1'b1;
+                    MemRead   = 1'b1;
+                    ResultSrc = 1'b1;
+                    ALUOp     = 2'b00;
+                    ImmSrc    = 2'b00;
+                end
+            end
+
+            OP_STORE: begin
+                if (funct3 == 3'b010) begin // SW
+                    ALUSrc   = 1'b1;
+                    MemWrite = 1'b1;
+                    ALUOp    = 2'b00;
+                    ImmSrc   = 2'b01;
+                end
+            end
+
+            OP_BRANCH: begin
+                if ((funct3 == 3'b000) || (funct3 == 3'b001)) begin // BEQ, BNE
+                    Branch = 1'b1;
+                    ALUOp  = 2'b01;
+                    ImmSrc = 2'b10;
+                end
+            end
+
             default: begin end
         endcase
     end
