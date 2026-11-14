@@ -60,7 +60,7 @@ Ten instructions covering arithmetic, logic, memory, and control flow:
 | Rashmi | Storage components | `register_file.v`, `data_memory.v` |
 | Ayush | Execution | `alu.v`, `alu_control.v` (standalone Phase 1 modules) |
 | Saumya | Operand selection and immediates | Multiplexers, immediate generator (planned) |
-| Samiksha | Control | Control unit (planned) |
+| Samiksha | Control and arithmetic verification | `control_unit.v`, `rv32i_phase1_core.v` |
 
 A per-file ownership map is maintained in Section 6.
 
@@ -133,10 +133,12 @@ All commands are run from the repository root.
 bash scripts/run_fetch_tests.sh      # PC, instruction memory, fetch integration
 bash scripts/run_storage_tests.sh    # register file, data memory
 bash scripts/run_alu_tests.sh        # ALU and ALU control
+bash scripts/run_phase1_tests.sh     # main decoder and arithmetic processor demo
 ```
 
-Each script compiles the relevant modules, runs the self-checking testbenches, and
-fails if any testbench does not print its PASS marker.
+The scripts compile the relevant modules and run the self-checking testbenches.
+See the [Phase 1 control and arithmetic guide](docs/control_phase1_guide.md)
+for the decoder truth table, simulation results, and waveform.
 
 ### Lint (Verilator)
 
@@ -171,10 +173,9 @@ For detailed, step-by-step setup instructions, see
 
 ## 6. Phase 1 status
 
-Phase 1 delivers the individual processor building blocks, each with its own
-self-checking testbench, verified before any CPU integration. The three completed
-contributions below are implemented, simulated, linted clean under Verilator `-Wall`,
-and synthesized under Yosys with no inferred latches.
+Phase 1 delivers individually verified RTL modules and a prototype that runs
+six arithmetic and logic instructions. The verification table records the
+checks run for each module.
 
 ### Completed
 
@@ -187,6 +188,8 @@ and synthesized under Yosys with no inferred latches.
 | `data_memory.v` | Rashmi | Pass (15 cases) | Clean | 8192 flip-flops (256x32) |
 | `alu.v` | Ayush | Pass (17 cases) | Clean | Combinational logic |
 | `alu_control.v` | Ayush | Pass (14 cases) | Clean | Combinational logic |
+| `control_unit.v` | Samiksha | Pass (20 cases) | Clean | Combinational logic |
+| `rv32i_phase1_core.v` | Samiksha | Pass (14 instruction steps) | Unused input bits in immediate generator | Synthesis and structural check passed |
 
 Verification highlights:
 - Program Counter: reset to 0x0, sequential +4 progression, external next-PC load.
@@ -199,12 +202,8 @@ Verification highlights:
 - ALU: all five operations, positive/negative operands, 32-bit wraparound and zero flag.
 - ALU control: ADD, SUB, AND, OR, XOR decode and unsupported-code behavior.
 
-### Remaining for Phase 1
-
-| Component | Owner | Status |
-|---|---|---|
-| Immediate generator and multiplexers | Saumya | Implemented (see [`docs/saumya_modules.md`](docs/saumya_modules.md)) |
-| Control unit | Samiksha | Planned |
+The immediate generator and multiplexers are documented in
+[Saumya’s module guide](docs/saumya_modules.md).
 
 Phase 1 also includes the Phase 1 deliverables required by the course: an IEEE-format
 report, a prototype demonstration video (maximum five minutes), and this Git
@@ -235,21 +234,22 @@ repository with version history reflecting each member's contributions.
 | `rtl/immediate_generator.v`, `rtl/alu_src_mux.v`, `rtl/writeback_mux.v`, `rtl/next_pc_mux.v`, `rtl/branch_target.v` | Saumya |
 | `testbench/tb_immediate_generator.v`, `testbench/tb_alu_src_mux.v`, `testbench/tb_writeback_mux.v`, `testbench/tb_next_pc_mux.v`, `testbench/tb_branch_target.v` | Saumya |
 | `scripts/run_saumya_tests.sh`, `docs/saumya_modules.md` | Saumya |
+| `rtl/control_unit.v`, `rtl/rv32i_phase1_core.v` | Samiksha |
+| `testbench/tb_control_unit.v`, `testbench/tb_rv32i_phase1_core.v` | Samiksha |
+| `programs/phase1_arithmetic.hex`, `scripts/run_phase1_tests.sh`, `docs/control_phase1_guide.md`, `docs/phase1_arithmetic_waveform.png` | Samiksha |
 
 ---
 
 ## 7. Forward plan (Phase 2 and beyond)
 
-The milestones below follow the project roadmap. Phase 1 corresponds to module
-development and unit verification; Phase 2 covers integration, full-processor
+The milestones below follow the project roadmap. Phase 2 extends the Phase 1
+arithmetic prototype with memory and branch execution, full-processor
 verification, and hardware analysis.
 
 ### Integration and execution
-1. Complete the remaining Phase 1 modules (ALU, ALU control, immediate generator,
-   multiplexers, control unit) with their own self-checking testbenches.
-2. Integrate the arithmetic datapath into `rv32i_core.v`, replacing the Phase 1
-   fetch scaffold's fixed PC+4 with next-PC selection.
-3. Add memory access and branch execution so all ten instructions run end to end.
+1. Wire the data memory and select between memory and ALU writeback.
+2. Wire branch comparison and select between PC+4 and the branch target.
+3. Verify all ten supported instructions end to end.
 
 ### Verification
 4. Build a comprehensive top-level processor testbench with architectural invariants
