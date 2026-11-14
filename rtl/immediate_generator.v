@@ -22,7 +22,12 @@
 
 module immediate_generator (
     // The full 32-bit instruction word coming from Instruction Memory.
+    // Only the immediate-bearing bits are read here; instruction[19:12] (rs1/
+    // funct3) and instruction[6:0] (opcode) are intentionally not part of any
+    // immediate, so the unused-bits lint warning is expected and suppressed.
+    /* verilator lint_off UNUSEDSIGNAL */
     input  wire [31:0] instruction,
+    /* verilator lint_on UNUSEDSIGNAL */
 
     // ImmSrc: selects which immediate format to extract.
     //   2'b00 -> I-type
