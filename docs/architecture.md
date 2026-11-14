@@ -1,6 +1,8 @@
 # Phase 1 Fetch-Path Architecture
 
-This Phase 1 implementation contains the instruction-fetch portion of the RV32I processor only.
+The integrated `rv32i_core.v` currently contains the instruction-fetch portion
+of the RV32I processor. The register file, data memory, ALU, and ALU control
+are individually implemented and tested, but are not yet wired into this core.
 
 ```mermaid
 flowchart LR
@@ -32,9 +34,9 @@ flowchart LR
 ## Complete single-cycle RV32I datapath (architecture target)
 
 The diagram below shows the full single-cycle datapath the processor is being built
-toward. The **solid** blocks (PC, PC+4, Instruction Memory) are implemented in this
-Phase 1 package. The **dashed** blocks are the Phase 2 integration targets owned by
-other team members and are shown here for architectural context only.
+toward. Solid PC, PC+4, and instruction-memory blocks are wired into the current
+core. The register file, ALU, and data memory are implemented separately but
+still need integration. The remaining dashed blocks are planned.
 
 ```mermaid
 flowchart TD
@@ -87,12 +89,12 @@ flowchart TD
 | PC + 4 | 1 | Implemented (in `rv32i_core.v`) |
 | Instruction Memory | 1 | Implemented |
 | Decoder / Control Unit | 2 | Planned |
-| Register File | 2 | Planned |
+| Register File | 1 | Implemented separately; integration pending |
 | Immediate Generator | 2 | Planned |
 | ALUSrc MUX | 2 | Planned |
-| ALU | 2 | Planned |
+| ALU and ALU control | 1 | Implemented separately; integration pending |
 | Branch Decision | 2 | Planned |
-| Data Memory | 2 | Planned |
+| Data Memory | 1 | Implemented separately; integration pending |
 | Write-Back MUX | 2 | Planned |
 | Next-PC MUX / branch target | 2 | Planned (replaces the Phase 1 `pc_plus4` path) |
 

@@ -58,7 +58,7 @@ Ten instructions covering arithmetic, logic, memory, and control flow:
 |---|---|---|
 | Ankit | Instruction-fetch path and initial integration | `program_counter.v`, `instruction_memory.v`, `rv32i_core.v` (fetch scaffold) |
 | Rashmi | Storage components | `register_file.v`, `data_memory.v` |
-| Ayush | Execution | ALU, ALU control (planned) |
+| Ayush | Execution | `alu.v`, `alu_control.v` (standalone Phase 1 modules) |
 | Saumya | Operand selection and immediates | Multiplexers, immediate generator (planned) |
 | Samiksha | Control | Control unit (planned) |
 
@@ -76,23 +76,29 @@ RISC-V/
 │   ├── instruction_memory.v
 │   ├── rv32i_core.v
 │   ├── register_file.v
-│   └── data_memory.v
+│   ├── data_memory.v
+│   ├── alu.v
+│   └── alu_control.v
 ├── testbench/                Self-checking Verilog testbenches
 │   ├── tb_program_counter.v
 │   ├── tb_instruction_memory.v
 │   ├── tb_rv32i_core.v
 │   ├── tb_register_file.v
-│   └── tb_data_memory.v
+│   ├── tb_data_memory.v
+│   ├── tb_alu.v
+│   └── tb_alu_control.v
 ├── scripts/                  Build and simulation scripts
 │   ├── run_fetch_tests.sh
-│   └── run_storage_tests.sh
+│   ├── run_storage_tests.sh
+│   └── run_alu_tests.sh
 ├── programs/                 Machine-code test images
 │   └── test_program.hex
 └── docs/                     Documentation
     ├── architecture.md       Datapath architecture and diagrams
     ├── fetch_path_guide.md   Setup and run guide (fetch path)
     ├── storage_guide.md      Setup and run guide (storage modules)
-    └── storage_modules.md    Register file and data memory interface reference
+    ├── storage_modules.md    Register file and data memory interface reference
+    └── alu_guide.md          ALU interface and test guide
 ```
 
 The `build/` directory holds generated simulation binaries and waveforms. It is
@@ -126,6 +132,7 @@ All commands are run from the repository root.
 ```bash
 bash scripts/run_fetch_tests.sh      # PC, instruction memory, fetch integration
 bash scripts/run_storage_tests.sh    # register file, data memory
+bash scripts/run_alu_tests.sh        # ALU and ALU control
 ```
 
 Each script compiles the relevant modules, runs the self-checking testbenches, and
@@ -138,6 +145,8 @@ verilator --lint-only -Wall rtl/program_counter.v
 verilator --lint-only -Wall rtl/instruction_memory.v
 verilator --lint-only -Wall rtl/register_file.v
 verilator --lint-only -Wall rtl/data_memory.v
+verilator --lint-only -Wall rtl/alu.v
+verilator --lint-only -Wall rtl/alu_control.v
 ```
 
 ### Synthesis checks (Yosys)
@@ -155,14 +164,15 @@ surfer build/tb_register_file.vcd
 
 For detailed, step-by-step setup instructions, see
 [`docs/fetch_path_guide.md`](docs/fetch_path_guide.md) and
-[`docs/storage_guide.md`](docs/storage_guide.md).
+[`docs/storage_guide.md`](docs/storage_guide.md), and
+[`docs/alu_guide.md`](docs/alu_guide.md).
 
 ---
 
 ## 6. Phase 1 status
 
 Phase 1 delivers the individual processor building blocks, each with its own
-self-checking testbench, verified before any CPU integration. The two completed
+self-checking testbench, verified before any CPU integration. The three completed
 contributions below are implemented, simulated, linted clean under Verilator `-Wall`,
 and synthesized under Yosys with no inferred latches.
 
@@ -175,6 +185,8 @@ and synthesized under Yosys with no inferred latches.
 | `rv32i_core.v` (fetch scaffold) | Ankit | Pass | Clean | No latches |
 | `register_file.v` | Rashmi | Pass (12 cases) | Clean | 1024 flip-flops (32x32) |
 | `data_memory.v` | Rashmi | Pass (15 cases) | Clean | 8192 flip-flops (256x32) |
+| `alu.v` | Ayush | Pass (17 cases) | Clean | Combinational logic |
+| `alu_control.v` | Ayush | Pass (14 cases) | Clean | Combinational logic |
 
 Verification highlights:
 - Program Counter: reset to 0x0, sequential +4 progression, external next-PC load.
@@ -184,12 +196,13 @@ Verification highlights:
   asynchronous reads, synchronous write with `RegWrite`, pre/post clock-edge behavior.
 - Data Memory: byte-to-word address conversion, separate read/write enables,
   misaligned and out-of-range accesses handled deterministically, data persistence.
+- ALU: all five operations, positive/negative operands, 32-bit wraparound and zero flag.
+- ALU control: ADD, SUB, AND, OR, XOR decode and unsupported-code behavior.
 
 ### Remaining for Phase 1
 
 | Component | Owner | Status |
 |---|---|---|
-| ALU and ALU control | Ayush | Planned |
 | Immediate generator and multiplexers | Saumya | Planned |
 | Control unit | Samiksha | Planned |
 
@@ -216,6 +229,9 @@ repository with version history reflecting each member's contributions.
 | `testbench/tb_data_memory.v` | Rashmi |
 | `scripts/run_storage_tests.sh` | Rashmi |
 | `docs/storage_guide.md`, `docs/storage_modules.md` | Rashmi |
+| `rtl/alu.v`, `rtl/alu_control.v` | Ayush |
+| `testbench/tb_alu.v`, `testbench/tb_alu_control.v` | Ayush |
+| `scripts/run_alu_tests.sh`, `docs/alu_guide.md` | Ayush |
 
 ---
 
