@@ -12,6 +12,7 @@ module instruction_memory #(
 );
 
     localparam NOP = 32'h00000013; // ADDI x0, x0, 0
+    localparam ADDR_WIDTH = $clog2(DEPTH); // Word-index width for a DEPTH-entry memory.
 
     reg [31:0] memory [0:DEPTH-1];
     integer i;
@@ -30,7 +31,9 @@ module instruction_memory #(
         if (address[1:0] != 2'b00)
             instruction = NOP; // RV32I instructions must be 4-byte aligned here.
         else if (address[31:2] < DEPTH)
-            instruction = memory[address[31:2]];
+            // Sized word index; the range check above guarantees the upper
+            // address bits are zero here, so the value is unchanged.
+            instruction = memory[address[ADDR_WIDTH+1:2]];
         else
             instruction = NOP; // Deterministic result for out-of-range fetches.
     end

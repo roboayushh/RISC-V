@@ -9,7 +9,7 @@ module tb_rv32i_core;
     integer errors;
 
     rv32i_core #(
-        .IMEM_DEPTH     (16),
+        .IMEM_DEPTH     (4),
         .IMEM_INIT_FILE ("programs/test_program.hex")
     ) dut (
         .clk         (clk),

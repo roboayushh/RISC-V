@@ -6,13 +6,43 @@ module tb_instruction_memory;
     wire [31:0] instruction;
     integer errors;
 
+    // Depth matches the 4-word image exactly, so $readmemh fills the whole array
+    // (no "not enough words" note). Addresses beyond index 3 exercise the
+    // out-of-range path and must return NOP.
     instruction_memory #(
-        .DEPTH     (16),
+        .DEPTH     (4),
         .INIT_FILE ("programs/test_program.hex")
     ) dut (
         .address     (address),
         .instruction (instruction)
     );
+
+    // Second instance with no init file: verifies the empty-init-file branch,
+    // which must leave every location at the NOP fill value.
+    wire [31:0] instruction_empty;
+    instruction_memory #(
+        .DEPTH     (16),
+        .INIT_FILE ("")
+    ) dut_empty (
+        .address     (address),
+        .instruction (instruction_empty)
+    );
+
+    task check_empty_init;
+        input [31:0] test_address;
+        begin
+            address = test_address;
+            #1;
+            if (instruction_empty !== 32'h00000013) begin
+                $display("FAIL: empty-init address=0x%08h expected=0x00000013 got=0x%08h",
+                         test_address, instruction_empty);
+                errors = errors + 1;
+            end else begin
+                $display("PASS: empty-init address=0x%08h instruction=0x%08h",
+                         test_address, instruction_empty);
+            end
+        end
+    endtask
 
     task check_instruction;
         input [31:0] test_address;
@@ -47,6 +77,10 @@ module tb_instruction_memory;
         check_instruction(32'h00000010, 32'h00000013);
         check_instruction(32'h00000002, 32'h00000013);
         check_instruction(32'h00000040, 32'h00000013);
+
+        // Empty/missing init file returns NOP everywhere.
+        check_empty_init(32'h00000000);
+        check_empty_init(32'h00000008);
 
         if (errors == 0)
             $display("\nINSTRUCTION MEMORY TEST PASSED");
