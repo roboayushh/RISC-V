@@ -13,7 +13,7 @@ fi
 mkdir -p build
 
 echo "============================================================"
-echo "Full RV32I CPU integration test (all 10 instructions)"
+echo "Full RV32I CPU integration test (arithmetic, memory and branches)"
 echo "============================================================"
 
 iverilog -g2005 -o build/tb_rv32i_core_full \

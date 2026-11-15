@@ -40,13 +40,17 @@ the decoder outputs, simulation commands and expected results.
 
 ## Full 10-instruction datapath
 
+The [prototype video](../README.md#prototype-video) walks through the datapath
+and shows the full-core simulation.
+
 [rv32i_core_full](../rtl/rv32i_core_full.v) wires every block together,
 including data memory, the writeback mux, the branch target adder and the
 next-PC mux, and runs the complete 10-instruction subset (ADD, SUB, AND, OR,
-XOR, ADDI, LW, SW, BEQ, BNE). The waveform below is the self-checking
+XOR, ADDI, LW, SW, BEQ, BNE). The demo runs ADDI, ADD, SW, LW, BEQ and BNE.
+The waveform below is from the self-checking
 `tb_rv32i_core_full` run (`build/tb_rv32i_core_full.vcd`).
 
-![Full RV32I single-cycle CPU waveform, all 10 instructions](figures/full-cpu-waveform.png)
+![Full-core integration test waveform](figures/full-cpu-waveform.png)
 
 Reading the trace:
 
