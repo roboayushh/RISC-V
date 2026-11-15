@@ -2,6 +2,7 @@
 \usepackage{cite}
 \usepackage{graphicx}
 \usepackage{url}
+\usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}{waveforms/}}
 \urlstyle{same}
@@ -28,6 +29,8 @@ The RV32I specification fixes the locations of register fields across instructio
 Patterson and Hennessy describe a single-cycle datapath with a register file, an arithmetic logic unit (ALU), separate instruction and data access, and multiplexers that select operands, writeback data, and the next PC \cite{cod}. That arrangement makes each instruction's path through the hardware visible in simulation. In this project, separate instruction and data memories avoid a shared memory port. Separate main and ALU decoders allow word-level decode and ALU selection to be checked independently. A single-cycle implementation sets its clock period by the longest active combinational path.
 
 UC Berkeley's Sodor project offers educational RV32I implementations ranging from a single-stage core to pipelined and microcoded designs \cite{sodor}. Its single-stage design provides a comparison for tracing the progression from a fetched instruction to a state update. Our Phase~1 implementation uses Verilog, a smaller instruction subset, and focused module tests to isolate integration errors.
+
+Modern Computer Architecture lectures, labs, and notes provide course context \cite{mcalectures,mcalabs,mcanotes}. Two YouTube playlists cover single-cycle RISC-V in Verilog and computer organization in Hindi \cite{riscvvideo,coavideo}.
 
 \section{Proposed Solution}
 \subsection{Scope and Datapath}
@@ -110,10 +113,10 @@ PC & Instruction & Result (decimal) \\
 \textbf{Samiksha Jangid} implemented the main decoder and integrated the arithmetic core. She added decoder and core tests, a test runner, memory-depth regression coverage, and submission documentation.
 
 \section{Conclusion}
-Phase~1 verifies the path from instruction fetch to register writeback for six RV32I arithmetic and logic instructions. The standalone storage and branch-path tests establish the interfaces and expected behaviors for the remaining four instructions in the proposed subset.
+Phase~1 verifies six arithmetic and logic instructions from fetch through writeback. The standalone tests verify storage and branch-path behavior for Phase~2 integration.
 
 \appendix[Waveform Evidence]
-Figures~\ref{fig:fetch}--\ref{fig:decode} show the standalone and fetch-path testbenches. All images were captured in VaporView~1.6.1 from Icarus Verilog VCDs at project revision \insn{21ec7a2}. The crop removes editor chrome. To reproduce the traces, run the five suites listed in the repository README and open the matching \insn{build/tb\_*.vcd} files \cite{project}.
+Figures~\ref{fig:fetch}--\ref{fig:decode} show VCDs from revision \insn{21ec7a2}, captured in VaporView~1.6.1 and cropped to the viewer. The repository lists the five commands to regenerate these traces \cite{project}.
 
 \begin{figure*}[!p]
 \centering
@@ -169,6 +172,11 @@ Figures~\ref{fig:fetch}--\ref{fig:decode} show the standalone and fetch-path tes
 \bibitem{rv32i} RISC-V International, \textquotedblleft{}RV32I base integer instruction set, version 2.1,\textquotedblright{} in \emph{The RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture}, Apr. 2024. [Online]. Available: \url{https://docs.riscv.org/reference/isa/v20240411/unpriv/rv32.html}
 \bibitem{cod} D. A. Patterson and J. L. Hennessy, \emph{Computer Organization and Design RISC-V Edition: The Hardware/Software Interface}, 2nd ed. Morgan Kaufmann, 2021, ch. 4.
 \bibitem{sodor} UC Berkeley Architecture Research, \textquotedblleft{}The Sodor processor collection.\textquotedblright{} [Online]. Available: \url{https://github.com/ucb-bar/riscv-sodor}
+\bibitem{mcalectures} \textquotedblleft{}Modern Computer Architecture lectures.\textquotedblright{} Course lectures.
+\bibitem{mcalabs} \textquotedblleft{}Modern Computer Architecture labs.\textquotedblright{} Course laboratory materials.
+\bibitem{mcanotes} \textquotedblleft{}Modern Computer Architecture lecture notes.\textquotedblright{} Course notes.
+\bibitem{riscvvideo} \textquotedblleft{}RISC-V Single Cycle Core in Verilog.\textquotedblright{} YouTube playlist. [Online]. Available: \href{https://www.youtube.com/watch?v=BVvDHhG0RoA&list=PL5AmAh9QoSK7Fwk9vOJu-3VqBng_HjGFc}{youtube.com/watch?v=BVvDHhG0RoA}
+\bibitem{coavideo} \textquotedblleft{}Computer Organization and Architecture Lectures in Hindi.\textquotedblright{} [Online]. Available: \href{https://www.youtube.com/playlist?list=PLOq2ARxtuVPh5RqBsEAhuLbXyG_-Gliz3}{YouTube playlist}
 \bibitem{icarus} Icarus Verilog Project, \textquotedblleft{}Icarus Verilog usage.\textquotedblright{} [Online]. Available: \url{https://steveicarus.github.io/iverilog/usage/index.html}
 \bibitem{verilator} Veripool, \textquotedblleft{}Verilator user's guide.\textquotedblright{} [Online]. Available: \url{https://verilator.org/guide/latest/}
 \bibitem{yosys} YosysHQ, \textquotedblleft{}Yosys Open SYnthesis Suite documentation.\textquotedblright{} [Online]. Available: \url{https://yosyshq.readthedocs.io/projects/yosys/en/latest/}
