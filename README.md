@@ -6,7 +6,7 @@ Phase 1 delivers a synthesizable 32-bit Verilog prototype that runs six RV32I
 arithmetic and logic instructions. It includes standalone verification for the
 storage and control-flow modules used in the next integration phase.
 
-[Phase 1 report](docs/phase1-report.pdf) ·
+[Phase 1 report (IEEE PDF)](docs/phase1-report.pdf) · [LaTeX source](docs/phase1-report.tex) ·
 [Architecture](docs/architecture.md) · [Control truth table and waveforms](docs/control_phase1_guide.md)
 
 ## Run the prototype
