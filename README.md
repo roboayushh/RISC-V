@@ -73,8 +73,9 @@ regression for reads, writes and address bounds.
 The scripts generate VCDs under `build/`, including
 `tb_control_unit.vcd`, `tb_rv32i_phase1_core.vcd` and
 `tb_memory_depth_one.vcd`. The guide explains which signals to load.
-The [arithmetic waveform](docs/phase1_arithmetic_waveform.png) captures the
-first seven instructions from simulation.
+The [waveform gallery](docs/waveforms/README.md) contains direct VaporView
+screenshots for all 15 simulations, including the
+[integrated ADD writeback](docs/waveforms/tb_rv32i_phase1_core.jpg).
 
 ## Team contributions
 

@@ -87,7 +87,13 @@ double-click a signal in the netlist to add it.
 | `build/tb_control_unit.vcd` | In `tb_control_unit`, add `instruction`, `RegWrite`, `ALUSrc`, `MemRead`, `MemWrite`, `ResultSrc`, `Branch`, `ALUOp`, and `ImmSrc` |
 | `build/tb_rv32i_phase1_core.vcd` | In `tb_rv32i_phase1_core`, add `clk`, `reset`, `pc`, and `instruction`. In its `dut` scope, add `rd`, `alu_result`, and `write_enable` |
 
-The following trace is drawn from the arithmetic simulation VCD. It shows the
-first seven instructions and the values present before their writeback edges.
+The screenshot below comes directly from VaporView. At 40 ns the ADD at
+PC `0x08` presents destination `x3` and result `0x1E` with write enable
+asserted. The register file commits that result at the 45 ns rising edge,
+which also advances the PC to the next instruction (SUB). The simulation
+checks `x3 = 30` after the edge.
 
-![Phase 1 arithmetic simulation waveform](phase1_arithmetic_waveform.png)
+![VaporView screenshot of the Phase 1 arithmetic simulation](waveforms/tb_rv32i_phase1_core.jpg)
+
+See the [waveform gallery](waveforms/README.md) for all 15 testbenches,
+including the [control unit trace](waveforms/tb_control_unit.jpg).
