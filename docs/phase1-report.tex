@@ -12,7 +12,8 @@
 \begin{document}
 
 \title{Design and Verification of a Single-Cycle RV32I Processor: Phase 1}
-\author{\IEEEauthorblockN{Ankit Raj Singh, Rashmi Anand, Ayush, Saumya, and Samiksha Jangid}}
+\author{\IEEEauthorblockN{Ankit Raj Singh, Rashmi Anand, Ayush, Saumya, and Samiksha Jangid}
+\IEEEauthorblockA{Department of CSE (AI)\\Newton School of Technology, Sonipat}}
 \maketitle
 
 \begin{abstract}
@@ -24,9 +25,9 @@ RV32I, single-cycle processor, Verilog, datapath, RTL verification
 \end{IEEEkeywords}
 
 \section{Literature Review}
-The Modern Computer Architecture lectures, labs, and lecture notes provide the course context for this project \cite{mcalectures,mcalabs,mcanotes}. The project connects that material to a working design by tracing a 32-bit instruction through fetch, decode, execution, and register writeback.
+RV32I fixes the position of each register field wherever it appears and uses instruction bit 31 as the sign bit for the immediates used here \cite{rv32i}. The Phase~1 core therefore wires the register indices directly from the instruction and uses one block to assemble and sign-extend I-, S-, and B-type immediates.
 
-The Verilog video series shows an example of a single-cycle RISC-V core \cite{riscvvideo}. The Hindi lecture series provides additional background on computer organization and architecture \cite{coavideo}. Phase~1 focuses on the arithmetic path. Tests first check individual modules and then check that the integrated datapath produces the expected register values at clock edges.
+In the textbook single-cycle datapath, instruction fetch, operand selection, ALU execution, and any register writeback fit within one clock period \cite{cod,ddca}. Phase~1 adopts that organization for arithmetic, separates instruction decoding from ALU operation selection, and tests the memory and branch paths at the module level before integrating them.
 
 \section{Proposed Solution}
 \subsection{Scope and Datapath}
@@ -74,9 +75,9 @@ Unsupported             & \insn{000000} & \insn{11} & \insn{11} \\
 The core writes an ALU result on a rising edge when reset is low, \insn{RegWrite} is high, and \insn{ResultSrc} selects the ALU. The six arithmetic and logic instructions exercise this path end to end. The decoder generates the expected controls for \insn{LW}, \insn{SW}, \insn{BEQ}, and \insn{BNE}, and the standalone tests exercise storage and branch-path components. Phase~2 connects data memory writeback and conditional next-PC selection for those four instructions.
 
 \section{Verification and Results}
-Icarus Verilog~13.0 ran the fetch, storage, ALU, operand-selection, and Phase~1 integration suites. All 15 testbenches passed. The 20-vector control test compared the control bits, ALU operation, and immediate for supported and unsupported encodings. The integrated test covered 14 instruction steps, including writes to \insn{x0}, a negative immediate, and suppressing writeback for a decoded load. The one-word memory test checked in-range and out-of-range behavior. Verilator lint and Yosys synthesis and structural checks passed on all 14 RTL modules.
+Icarus Verilog~13.0 ran the fetch, storage, ALU, operand-selection, and Phase~1 integration suites \cite{icarus}. All 15 testbenches passed. The 20-vector control test compared the control bits, ALU operation, and immediate for supported and unsupported encodings. The integrated test covered 14 instruction steps, including writes to \insn{x0}, a negative immediate, and suppressing writeback for a decoded load. The one-word memory test checked in-range and out-of-range behavior. All 14 RTL modules passed Verilator~5.054 lint \cite{verilator} and Yosys synthesis and structural checks \cite{yosys}.
 
-Table~\ref{tab:results} lists the first seven demo instructions. The VaporView capture in Fig.~\ref{fig:add} shows the ADD at 40~ns with PC \insn{0x08}, destination \insn{x3}, ALU result \insn{0x1E}, and write enable high. The rising edge at 45~ns commits the value as the PC advances to SUB. The testbench confirms \insn{x3 = 30} after the edge. The appendix includes the remaining 14 VCD screenshots. The source repository provides the test runners and full-resolution captures.
+Table~\ref{tab:results} lists the first seven demo instructions. The VaporView capture in Fig.~\ref{fig:add} shows the ADD at 40~ns with PC \insn{0x08}, destination \insn{x3}, ALU result \insn{0x1E}, and write enable high. The rising edge at 45~ns commits the value as the PC advances to SUB. The testbench confirms \insn{x3 = 30} after the edge. The appendix includes the remaining 14 VCD screenshots. The repository provides the test runners and full-resolution captures. The course lectures and labs provide the background for the project \cite{mcalectures,mcalabs}.
 
 \begin{table}[!t]
 \caption{Verified Arithmetic Register Writeback}
@@ -164,12 +165,15 @@ Figures~\ref{fig:fetch}--\ref{fig:decode} show VCDs from revision \insn{21ec7a2}
 \label{fig:decode}
 \end{figure*}
 
-\begin{thebibliography}{00}
+\begin{thebibliography}{8}
+\bibitem{rv32i} A. Waterman and K. Asanovi\'c, Eds., \emph{The RISC-V Instruction Set Manual, Volume I: Unprivileged ISA}, ver. 20191213. RISC-V Foundation, Dec. 2019, ch. 2. [Online]. Available: \href{https://docs.riscv.org/reference/isa/v20191213/_attachments/riscv-unprivileged.pdf}{RISC-V specification archive}
+\bibitem{cod} D. A. Patterson and J. L. Hennessy, \emph{Computer Organization and Design RISC-V Edition: The Hardware/Software Interface}, 2nd ed. Morgan Kaufmann, 2020, ch. 4.
+\bibitem{ddca} S. L. Harris and D. M. Harris, \emph{Digital Design and Computer Architecture: RISC-V Edition}. Morgan Kaufmann, 2021, ch. 7.
+\bibitem{icarus} S. Williams, \emph{Icarus Verilog}, ver. 13.0. [Online]. Available: \href{https://github.com/steveicarus/iverilog/releases/tag/v13_0}{Release notes}
+\bibitem{verilator} W. Snyder, \emph{Verilator}, ver. 5.054. [Online]. Available: \href{https://verilator.org/guide/latest/changes.html#verilator-5-054-2026-11-01}{Release notes}
+\bibitem{yosys} C. Wolf, \emph{Yosys Open SYnthesis Suite}. [Online]. Available: \href{https://yosyshq.net/yosys/documentation.html}{Documentation}
 \bibitem{mcalectures} \textquotedblleft{}Modern Computer Architecture lectures.\textquotedblright{} Course lectures.
 \bibitem{mcalabs} \textquotedblleft{}Modern Computer Architecture labs.\textquotedblright{} Course laboratory materials.
-\bibitem{mcanotes} \textquotedblleft{}Modern Computer Architecture lecture notes.\textquotedblright{} Course notes.
-\bibitem{riscvvideo} \textquotedblleft{}RISC-V Single Cycle Core in Verilog.\textquotedblright{} YouTube playlist. [Online]. Available: \href{https://www.youtube.com/watch?v=BVvDHhG0RoA&list=PL5AmAh9QoSK7Fwk9vOJu-3VqBng_HjGFc}{youtube.com/watch?v=BVvDHhG0RoA}
-\bibitem{coavideo} \textquotedblleft{}Computer Organization and Architecture Lectures in Hindi.\textquotedblright{} [Online]. Available: \href{https://www.youtube.com/playlist?list=PLOq2ARxtuVPh5RqBsEAhuLbXyG_-Gliz3}{YouTube playlist}
 \end{thebibliography}
 
 \end{document}
