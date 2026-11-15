@@ -61,20 +61,45 @@ bash scripts/run_storage_tests.sh &&
 bash scripts/run_alu_tests.sh &&
 bash scripts/run_saumya_tests.sh &&
 bash scripts/run_phase1_tests.sh &&
+bash scripts/run_full_cpu_test.sh &&
 bash scripts/check_phase1_rtl.sh
 ```
 
-All five simulation suites passed, covering 15 testbenches. The RTL checker
+![All six simulation suites passing](docs/figures/all-tests-pass.png)
+
+All six simulation suites passed, covering 15 testbenches. The RTL checker
 runs Verilator `-Wall` and Yosys synthesis, latch and structural checks on all
-14 modules. Both memory modules also passed Icarus elaboration and Verilator
-lint at depths 1, 2, 3, 14 and 256. The smallest configuration has a simulation
-regression for reads, writes and address bounds.
+15 modules, and every module passes with no inferred latches. Both memory
+modules also passed Icarus elaboration and Verilator lint at depths 1, 2, 3, 14
+and 256. The smallest configuration has a simulation regression for reads,
+writes and address bounds.
+
+![All 15 RTL modules passing Verilator lint and Yosys latch checks](docs/figures/lint-clean.png)
 
 The scripts generate VCDs under `build/`, including
 `tb_control_unit.vcd`, `tb_rv32i_phase1_core.vcd` and
 `tb_memory_depth_one.vcd`. The guide explains which signals to load.
 The [arithmetic waveform](docs/phase1_arithmetic_waveform.png) captures the
-first seven instructions from simulation.
+first seven instructions from simulation. The
+[full-CPU waveform](docs/figures/full-cpu-waveform.png) captures the complete
+10-instruction datapath (`tb_rv32i_core_full.vcd`): the single `MemWrite` pulse
+is the `SW`, and the two `PCSrc` pulses are the taken `BEQ` and `BNE` branches
+that skip over the `x5` and `x7` writes, matching the self-checked final state.
+
+![Full RV32I single-cycle CPU waveform, all 10 instructions](docs/figures/full-cpu-waveform.png)
+
+Running `bash scripts/run_full_cpu_test.sh` self-checks every architectural
+result and reports `FULL RV32I CPU TEST PASSED`:
+
+![Full CPU integration test passing all register and memory checks](docs/figures/full-cpu-test-pass.png)
+
+## Synthesis
+
+Generic Yosys synthesis of the full 10-instruction core (`rv32i_core_full`)
+reports 22374 cells and 9248 flip-flops (data memory 8192, register file 1024,
+program counter 32), with no inferred latches. The single-cycle organisation
+gives a fixed CPI of 1. Full resource tables are in
+[docs/synthesis.md](docs/synthesis.md).
 
 ## Team contributions
 
