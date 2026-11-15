@@ -37,3 +37,35 @@ supported depth with valid, misaligned and out-of-range addresses.
 
 See the [control truth table and waveform guide](control_phase1_guide.md) for
 the decoder outputs, simulation commands and expected results.
+
+## Full 10-instruction datapath
+
+[rv32i_core_full](../rtl/rv32i_core_full.v) wires every block together,
+including data memory, the writeback mux, the branch target adder and the
+next-PC mux, and runs the complete 10-instruction subset (ADD, SUB, AND, OR,
+XOR, ADDI, LW, SW, BEQ, BNE). The waveform below is the self-checking
+`tb_rv32i_core_full` run (`build/tb_rv32i_core_full.vcd`).
+
+![Full RV32I single-cycle CPU waveform, all 10 instructions](figures/full-cpu-waveform.png)
+
+Reading the trace:
+
+- `reset` holds the PC at zero, then `pc` advances by four each cycle.
+- The first write-back value `write_data = 0000000a` is `x1 = 10` from `ADDI`.
+- The single `MemWrite` pulse is the `SW` storing `30` to `mem[0]`.
+- The two `PCSrc` pulses are the taken `BEQ` (`x3 == x4`) and `BNE`
+  (`x1 != x2`); each skips the following `ADDI`, so `x5` and `x7` stay zero.
+- Execution ends on the `00000013` NOP padding.
+
+The final architectural state (`x1=10, x2=20, x3=30, x4=30, x5=0, x6=7,
+x7=0, x8=5, mem[0]=30`) is asserted by the testbench, so the waveform is a
+visual confirmation of a run that already passes every check.
+
+Running `bash scripts/run_full_cpu_test.sh` prints each self-checked result
+and the final `FULL RV32I CPU TEST PASSED` banner:
+
+![Full CPU integration test passing all register and memory checks](figures/full-cpu-test-pass.png)
+
+Generic Yosys synthesis of this core reports 22374 cells and 9248 flip-flops
+with no inferred latches. See [synthesis statistics](synthesis.md) for the full
+per-module and cell-type tables.
