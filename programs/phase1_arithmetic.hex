@@ -1,0 +1,14 @@
+00a00093 // addi x1, x0, 10
+01400113 // addi x2, x0, 20
+002081b3 // add  x3, x1, x2
+40110233 // sub  x4, x2, x1
+0020f2b3 // and  x5, x1, x2
+0020e333 // or   x6, x1, x2
+0020c3b3 // xor  x7, x1, x2
+00100013 // addi x0, x0, 1
+ffe10413 // addi x8, x2, -2
+00002403 // lw   x8, 0(x0)   (memory writeback disabled in Phase 1)
+02208433 // mul  x8, x1, x2  (unsupported encoding)
+008174b3 // and  x9, x2, x8
+00816533 // or   x10, x2, x8
+008145b3 // xor  x11, x2, x8
