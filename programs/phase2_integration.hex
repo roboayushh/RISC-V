@@ -1,0 +1,25 @@
+00A00093 // [0x00] ADDI x1,  x0, 10       -> x1 = 10
+01400113 // [0x04] ADDI x2,  x0, 20       -> x2 = 20
+002081B3 // [0x08] ADD  x3,  x1, x2       -> x3 = 30  (10 + 20)
+40110233 // [0x0C] SUB  x4,  x2, x1       -> x4 = 10  (20 - 10)
+0020F2B3 // [0x10] AND  x5,  x1, x2       -> x5 = 0   (0x0A & 0x14 = 0x00)
+0020E333 // [0x14] OR   x6,  x1, x2       -> x6 = 30  (0x0A | 0x14 = 0x1E)
+0020C3B3 // [0x18] XOR  x7,  x1, x2       -> x7 = 30  (0x0A ^ 0x14 = 0x1E)
+00500413 // [0x1C] ADDI x8,  x0, 5        -> x8 = 5
+00302023 // [0x20] SW   x3,  0(x0)        -> mem[0] = 30
+00402223 // [0x24] SW   x4,  4(x0)        -> mem[1] = 10
+00002483 // [0x28] LW   x9,  0(x0)        -> x9 = 30 (from mem[0])
+00402503 // [0x2C] LW   x10, 4(x0)        -> x10 = 10 (from mem[1])
+00208663 // [0x30] BEQ  x1, x2, +12       -> NOT taken (10 != 20)
+00100593 // [0x34] ADDI x11, x0, 1        -> x11 = 1  (BEQ not taken, reached)
+00109663 // [0x38] BNE  x1, x1, +12       -> NOT taken (10 == 10)
+00200613 // [0x3C] ADDI x12, x0, 2        -> x12 = 2  (BNE not taken, reached)
+00000663 // [0x40] BEQ  x0, x0, +12       -> TAKEN (0 == 0), jump to 0x4C
+06300693 // [0x44] ADDI x13, x0, 99       -> SKIPPED by BEQ taken
+06300713 // [0x48] ADDI x14, x0, 99       -> SKIPPED by BEQ taken
+02A00793 // [0x4C] ADDI x15, x0, 42       -> x15 = 42 (BEQ target)
+00209663 // [0x50] BNE  x1, x2, +12       -> TAKEN (10 != 20), jump to 0x5C
+06300813 // [0x54] ADDI x16, x0, 99       -> SKIPPED by BNE taken
+06300893 // [0x58] ADDI x17, x0, 99       -> SKIPPED by BNE taken
+03700913 // [0x5C] ADDI x18, x0, 55       -> x18 = 55 (BNE target)
+00000063 // [0x60] BEQ  x0, x0, 0         -> Infinite loop (halt)
