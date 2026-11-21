@@ -1,0 +1,8 @@
+04000093 // [0x00] ADDI x1, x0, 64      -> x1 = 64  (base; word 16)
+06400113 // [0x04] ADDI x2, x0, 100     -> x2 = 100
+0C800293 // [0x08] ADDI x5, x0, 200     -> x5 = 200
+0020A023 // [0x0C] SW   x2, 0(x1)       -> mem[word 16] = 100  (addr 64)
+0050A223 // [0x10] SW   x5, 4(x1)       -> mem[word 17] = 200  (addr 68, +4 offset)
+0000A183 // [0x14] LW   x3, 0(x1)       -> x3 = mem[word 16] = 100 (not clobbered by store to word 17)
+0040A303 // [0x18] LW   x6, 4(x1)       -> x6 = mem[word 17] = 200
+00000063 // [0x1C] BEQ  x0, x0, 0       -> halt

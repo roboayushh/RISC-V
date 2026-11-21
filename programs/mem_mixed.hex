@@ -1,0 +1,14 @@
+04000093 // [0x00] ADDI x1, x0, 64      -> x1 = 64  (base; word 16)
+00700113 // [0x04] ADDI x2, x0, 7       -> x2 = 7
+00500193 // [0x08] ADDI x3, x0, 5       -> x3 = 5
+00310233 // [0x0C] ADD  x4, x2, x3      -> x4 = 12   (arithmetic BEFORE memory)
+403102B3 // [0x10] SUB  x5, x2, x3      -> x5 = 2
+0040A023 // [0x14] SW   x4, 0(x1)       -> mem[word 16] = 12
+0000A303 // [0x18] LW   x6, 0(x1)       -> x6 = 12
+005303B3 // [0x1C] ADD  x7, x6, x5      -> x7 = 14   (arithmetic USING a loaded value)
+0070A223 // [0x20] SW   x7, 4(x1)       -> mem[word 17] = 14
+0040A403 // [0x24] LW   x8, 4(x1)       -> x8 = 14
+003144B3 // [0x28] XOR  x9, x2, x3      -> x9 = 2     (7 ^ 5, arithmetic AFTER memory)
+00317533 // [0x2C] AND  x10, x2, x3     -> x10 = 5    (7 & 5)
+003165B3 // [0x30] OR   x11, x2, x3     -> x11 = 7    (7 | 5)
+00000063 // [0x34] BEQ  x0, x0, 0       -> halt
