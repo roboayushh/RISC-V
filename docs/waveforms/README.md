@@ -56,3 +56,30 @@ See the [technical report](../phase1-report.pdf) for the datapath diagram,
 control truth table, and annotated results. Phase 1 exercises loads, stores,
 and branches in standalone modules and decoder tests. The integrated core
 demo verifies arithmetic execution.
+
+## Phase 2 — Data memory (LW/SW) integration (Rashmi)
+
+> Unlike the Phase 1 images above (VaporView screenshots), the two figures below
+> are rendered **directly from the simulation VCD** `build/tb_memory_integration.vcd`
+> (bus values decoded inline). Regenerate the VCD with
+> `bash scripts/run_memory_integration.sh` (reports `MEMORY INTEGRATION TEST PASSED
+> (34/34 checks)`). Signals shown are from the `dut_basic.u_core` instance running
+> `programs/memory_test.hex` (== `mem_basic`): `ADDI, ADDI, SW, LW, ADD`.
+
+### Full run — SW then LW datapath
+
+![Memory SW/LW datapath: reset plus all six instructions](mem_sw_lw_full.png)
+
+PC steps 0x0 → 0x4 → 0x8 → 0xC → 0x10. At **PC = 0x8 (SW x2,0(x1))** `MemWrite` is
+high, `alu_result` = 0x40 (64) is the effective address, `reg_data2` = 0x19 (25) is
+the stored data, and `RegWrite` is low — a store writes memory, **not** a register.
+At **PC = 0xC (LW x3,0(x1))** `MemRead` is high at the same address 0x40, so
+`mem_read_data` = 0x19 (25) and `write_back_data` = 25 with `RegWrite` high. At
+**PC = 0x10 (ADD x4,x2,x3)** `write_back_data` = 0x32 (50).
+
+### Zoom — the SW and LW cycles
+
+![Zoom on the SW (PC=0x8) and LW (PC=0xC) cycles](mem_sw_lw_zoom.png)
+
+The enlarged view isolates the `MemWrite`/`MemRead` pulses and the value `25`
+flowing `reg_data2 → data memory → mem_read_data → write_back_data`.
