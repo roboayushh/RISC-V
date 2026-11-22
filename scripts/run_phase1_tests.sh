@@ -27,7 +27,7 @@ run_test tb_control_unit \
     rtl/control_unit.v rtl/alu_control.v rtl/immediate_generator.v
 
 run_test tb_rv32i_phase1_core \
-    rtl/program_counter.v rtl/instruction_memory.v rtl/rv32i_core.v \
+    rtl/program_counter.v rtl/instruction_memory.v \
     rtl/control_unit.v rtl/alu_control.v rtl/immediate_generator.v \
     rtl/alu_src_mux.v rtl/register_file.v rtl/alu.v rtl/rv32i_phase1_core.v
 

@@ -18,17 +18,29 @@ module rv32i_phase1_core #(
     wire [1:0]  alu_op, imm_src;
     wire        reg_write, alu_src, result_src, write_enable;
     wire        unused_mem_read, unused_mem_write, unused_branch, unused_zero;
+    wire [31:0] next_pc;
 
     // Phase 1 writes ALU results only. Loads request memory writeback.
     assign write_enable = !reset && reg_write && !result_src;
 
-    rv32i_core #(
-        .IMEM_DEPTH(IMEM_DEPTH),
-        .IMEM_INIT_FILE(IMEM_INIT_FILE)
-    ) fetch (
+    // Keep the Phase 1 wrapper independent of the Phase 2 full core. The old
+    // version instantiated rv32i_core when that name referred to a fetch-only
+    // scaffold; rv32i_core is now the complete processor and must not be nested
+    // here as a second executing datapath.
+    assign next_pc = pc + 32'd4;
+
+    program_counter pc_unit (
         .clk(clk),
         .reset(reset),
-        .pc(pc),
+        .next_pc(next_pc),
+        .pc(pc)
+    );
+
+    instruction_memory #(
+        .DEPTH(IMEM_DEPTH),
+        .INIT_FILE(IMEM_INIT_FILE)
+    ) imem (
+        .address(pc),
         .instruction(instruction)
     );
 
