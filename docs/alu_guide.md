@@ -1,8 +1,8 @@
 # Ayush Phase 1: ALU and ALU control
 
-This branch adds standalone, combinational execution modules. The current
-`rv32i_core.v` remains the instruction-fetch scaffold; it does not yet decode or
-execute instructions.
+The standalone combinational execution modules are now integrated into the
+complete Phase 2 `rv32i_core.v`. The original unit tests remain, and
+`tb_alu_integration.v` verifies the same operations through the full processor.
 
 ## Interfaces
 
@@ -33,8 +33,8 @@ to `alu.alu_control`.
 
 For R-type (`alu_op=10`), `funct3=000` selects ADD when bit 30 is 0 and SUB
 when it is 1. `funct3=111/110/100` selects AND/OR/XOR when bit 30 is 0.
-Unsupported combinations return `111`. The future instruction decoder must
-validate opcode and the remaining `funct7` bits; this module does not take them.
+Unsupported combinations return `111`. The main instruction decoder validates
+opcode and the remaining `funct7` bits; this module does not take them.
 An unsupported code drives ALU result 0, so its zero flag must not be used as
 a branch decision.
 

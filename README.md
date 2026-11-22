@@ -1,10 +1,16 @@
 # Single-Cycle RISC-V Processor
 
-**Modern Computer Architecture · Phase 1**
+**Modern Computer Architecture · Phase 2**
 
 Phase 1 delivers a synthesizable 32-bit Verilog prototype that runs six RV32I
 arithmetic and logic instructions. It includes standalone verification for the
 storage and control-flow modules used in the next integration phase.
+
+Phase 2 integrates the complete single-cycle datapath for `ADD`, `SUB`, `AND`,
+`OR`, `XOR`, `ADDI`, `LW`, `SW`, `BEQ`, and `BNE`. Dedicated processor,
+memory, and ALU integration suites verify the full path, including signed
+immediates, positive/negative memory offsets, branch equality decisions, and
+32-bit arithmetic boundary cases.
 
 [Phase 1 report (IEEE PDF)](docs/phase1-report.pdf) · [LaTeX source](docs/phase1-report.tex) ·
 [Architecture](docs/architecture.md) · [Control truth table and waveforms](docs/control_phase1_guide.md)
@@ -26,6 +32,10 @@ in VS Code.
 ```bash
 brew install icarus-verilog verilator yosys
 bash scripts/run_phase1_tests.sh
+bash scripts/run_phase2_integration.sh
+bash scripts/run_memory_integration.sh
+bash scripts/run_alu_integration.sh
+./synthesize.sh
 ```
 
 Run from the repository root. The script prints
@@ -51,11 +61,11 @@ clock edges and verifies 14 instruction steps in total.
 ![Phase 1 arithmetic datapath and Phase 2 connections](docs/figures/phase1-datapath.svg)
 
 - [`rv32i_phase1_core.v`](rtl/rv32i_phase1_core.v) is the working arithmetic top level.
-  It wraps the sequential [fetch stage](rtl/rv32i_core.v), which contains the
-  program counter, instruction memory and PC + 4.
+  It directly instantiates the program counter and instruction memory for its
+  historical six-instruction regression. [`rv32i_core.v`](rtl/rv32i_core.v)
+  is now the complete Phase 2 processor.
 - `ADD`, `SUB`, `AND`, `OR`, `XOR` and `ADDI` execute end to end.
-  `LW`, `SW`, `BEQ` and `BNE` are decoded and covered by the control-unit test.
-  Phase 2 connects the data memory and branch path to execute those instructions.
+  Phase 2 also executes `LW`, `SW`, `BEQ` and `BNE` end to end.
 - The register file contains 32 32-bit registers with x0 hardwired to zero.
   Instruction and data memories use byte addresses and asynchronous reads.
   The standalone memories default to 256 words. The prototype uses 14 instruction words.
@@ -104,11 +114,19 @@ register and memory values and reports `FULL RV32I CPU TEST PASSED`:
 
 ## Synthesis
 
-Generic Yosys synthesis of the full 10-instruction core (`rv32i_core_full`)
-reports 22374 cells and 9248 flip-flops (data memory 8192, register file 1024,
+Generic Yosys synthesis of the full 10-instruction core (`rv32i_core`) reports
+22,445 cells and 9,248 flip-flops (data memory 8,192, register file 1,024,
 program counter 32), with no inferred latches. The single-cycle organisation
 gives a fixed CPI of 1. Full resource tables are in
 [docs/synthesis.md](docs/synthesis.md).
+
+The Phase 2 synthesis workflow is [`synthesize.sh`](synthesize.sh). It runs
+Verilator lint, the end-to-end ALU integration test, Yosys synthesis and
+structural checks, creates
+[`netlist/rv32i_core_netlist.v`](netlist/rv32i_core_netlist.v), and refreshes
+[`synthesis_report.txt`](synthesis_report.txt). See
+[`timing_analysis.md`](timing_analysis.md) for the load critical path, generic
+logic-depth results, resource interpretation, and single-cycle timing limits.
 
 ## Team contributions
 

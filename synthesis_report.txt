@@ -1,0 +1,321 @@
+RV32I CORE SYNTHESIS REPORT
+============================
+
+Yosys 0.70+post (git sha1 0c11ea098be065e585a90a06e7b7da49936cf231, Release, AppleClang clang++ 21.0.0.21000334)
+
+Top module: rv32i_core
+Netlist: netlist/rv32i_core_netlist.v
+Lint: PASS (Verilator -Wall)
+ALU integration simulation: PASS
+Yosys structural check: PASS (no conflicts or undriven wires)
+
+RESOURCE STATISTICS
+-------------------
+
+18. Printing statistics.
+
+=== rv32i_core ===
+
+        +----------Local Count, excluding submodules.
+        | 
+       63 wires
+      496 wire bits
+       34 public wires
+      467 public wire bits
+        4 ports
+       66 port bits
+       62 cells
+        2   $_ANDNOT_
+       28   $_AND_
+        1   $_NAND_
+        1   $_NOT_
+        1   $_XNOR_
+       29   $_XOR_
+       12 submodules
+        1   $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
+        1   $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
+        1   alu
+        1   alu_control
+        1   alu_src_mux
+        1   branch_target
+        1   control_unit
+        1   immediate_generator
+        1   next_pc_mux
+        1   program_counter
+        1   register_file
+        1   writeback_mux
+
+=== next_pc_mux ===
+
+        +----------Local Count, excluding submodules.
+        | 
+        4 wires
+       97 wire bits
+        4 public wires
+       97 public wire bits
+        4 ports
+       97 port bits
+       32 cells
+       32   $_MUX_
+
+=== branch_target ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      135 wires
+      228 wire bits
+        3 public wires
+       96 public wire bits
+        3 ports
+       96 port bits
+      164 cells
+       31   $_AND_
+       70   $_NAND_
+       10   $_OR_
+       12   $_XNOR_
+       41   $_XOR_
+
+=== writeback_mux ===
+
+        +----------Local Count, excluding submodules.
+        | 
+        4 wires
+       97 wire bits
+        4 public wires
+       97 public wire bits
+        4 ports
+       97 port bits
+       32 cells
+       32   $_MUX_
+
+=== $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000 ===
+
+        +----------Local Count, excluding submodules.
+        | 
+     8749 wires
+    16878 wire bits
+      265 public wires
+     8363 public wire bits
+        6 ports
+       99 port bits
+    16740 cells
+      364   $_AND_
+     8192   $_DFFE_PP_
+     8160   $_MUX_
+       16   $_NOR_
+        8   $_NOT_
+
+=== alu ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      590 wires
+      685 wire bits
+        5 public wires
+      100 public wire bits
+        5 ports
+      100 port bits
+      618 cells
+       10   $_ANDNOT_
+      141   $_AND_
+        1   $_MUX_
+      239   $_NAND_
+        3   $_NOR_
+        1   $_NOT_
+       30   $_ORNOT_
+      138   $_OR_
+       36   $_XNOR_
+       19   $_XOR_
+
+=== alu_control ===
+
+        +----------Local Count, excluding submodules.
+        | 
+       16 wires
+       21 wire bits
+        4 public wires
+        9 public wire bits
+        4 ports
+        9 port bits
+       15 cells
+        2   $_ANDNOT_
+        6   $_AND_
+        1   $_NAND_
+        6   $_OR_
+
+=== alu_src_mux ===
+
+        +----------Local Count, excluding submodules.
+        | 
+        4 wires
+       97 wire bits
+        4 public wires
+       97 public wire bits
+        4 ports
+       97 port bits
+       32 cells
+       32   $_MUX_
+
+=== immediate_generator ===
+
+        +----------Local Count, excluding submodules.
+        | 
+       22 wires
+       99 wire bits
+        5 public wires
+       82 public wire bits
+        3 ports
+       66 port bits
+       30 cells
+        2   $_ANDNOT_
+        7   $_AND_
+       18   $_NAND_
+        1   $_NOR_
+        1   $_ORNOT_
+        1   $_XOR_
+
+=== register_file ===
+
+        +----------Local Count, excluding submodules.
+        | 
+     3505 wires
+     4664 wire bits
+       41 public wires
+     1169 public wire bits
+        8 ports
+      113 port bits
+     4552 cells
+       75   $_ANDNOT_
+      685   $_AND_
+     1024   $_DFFE_PP_
+     1280   $_MUX_
+      707   $_NAND_
+      205   $_NOR_
+        5   $_NOT_
+      320   $_ORNOT_
+      251   $_OR_
+
+=== control_unit ===
+
+        +----------Local Count, excluding submodules.
+        | 
+       55 wires
+       71 wire bits
+       11 public wires
+       27 public wire bits
+       11 ports
+       27 port bits
+       53 cells
+       13   $_ANDNOT_
+       17   $_AND_
+        2   $_MUX_
+       10   $_NAND_
+        6   $_NOR_
+        4   $_ORNOT_
+        1   $_OR_
+
+=== $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory ===
+
+        +----------Local Count, excluding submodules.
+        | 
+       69 wires
+      167 wire bits
+        4 public wires
+      102 public wire bits
+        2 ports
+       64 port bits
+       83 cells
+       16   $_ANDNOT_
+       22   $_AND_
+        4   $_MUX_
+       18   $_NAND_
+       15   $_NOR_
+        4   $_NOT_
+        1   $_ORNOT_
+        3   $_OR_
+
+=== program_counter ===
+
+        +----------Local Count, excluding submodules.
+        | 
+        4 wires
+       66 wire bits
+        4 public wires
+       66 public wire bits
+        4 ports
+       66 port bits
+       32 cells
+       32   $_SDFF_PP0_
+
+=== design hierarchy ===
+
+        +----------Count including submodules.
+        | 
+    22445 rv32i_core
+       83 $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
+    16740 $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
+      618 alu
+       15 alu_control
+       32 alu_src_mux
+      164 branch_target
+       53 control_unit
+       30 immediate_generator
+       32 next_pc_mux
+       32 program_counter
+     4552 register_file
+       32 writeback_mux
+
+        +----------Count including submodules.
+        | 
+    13220 wires
+    23666 wire bits
+      388 public wires
+    10772 public wire bits
+       62 ports
+      997 port bits
+        - memories
+        - memory bits
+        - processes
+    22445 cells
+      120   $_ANDNOT_
+     1301   $_AND_
+     9216   $_DFFE_PP_
+     9543   $_MUX_
+     1064   $_NAND_
+      246   $_NOR_
+       19   $_NOT_
+      356   $_ORNOT_
+      409   $_OR_
+       32   $_SDFF_PP0_
+       49   $_XNOR_
+       90   $_XOR_
+       12 submodules
+        1   $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
+        1   $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
+        1   alu
+        1   alu_control
+        1   alu_src_mux
+        1   branch_target
+        1   control_unit
+        1   immediate_generator
+        1   next_pc_mux
+        1   program_counter
+        1   register_file
+        1   writeback_mux
+
+
+GENERIC COMBINATIONAL LOGIC DEPTH
+---------------------------------
+Longest topological path in alu (length=69):
+Longest topological path in alu_control (length=5):
+Longest topological path in register_file (length=10):
+Longest topological path in data_memory (length=9):
+Longest topological path in writeback_mux (length=1):
+Longest topological path in branch_target (length=62):
+Longest topological path in next_pc_mux (length=1):
+Longest topological path in immediate_generator (length=3):
+Longest topological path in control_unit (length=7):
+
+These are generic mapped gate levels, not nanoseconds. A target-cell
+library, placement, routing, and static timing constraints are required
+for a technology-specific maximum clock frequency.
