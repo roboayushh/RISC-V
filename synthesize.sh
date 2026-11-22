@@ -62,7 +62,9 @@ done
     printf 'Yosys structural check: PASS (no conflicts or undriven wires)\n\n'
     printf 'RESOURCE STATISTICS\n'
     printf '%s\n' '-------------------'
-    cat build/synthesis/stat.txt
+    # Yosys uses a trailing space on the vertical separator in its ASCII
+    # tables. Strip line-end whitespace so the checked-in report stays clean.
+    sed 's/[[:space:]]*$//' build/synthesis/stat.txt
     printf '\nGENERIC COMBINATIONAL LOGIC DEPTH\n'
     printf '%s\n' '---------------------------------'
     cat build/synthesis/logic_depth.txt
