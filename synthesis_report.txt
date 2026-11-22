@@ -17,7 +17,7 @@ RESOURCE STATISTICS
 === rv32i_core ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
        63 wires
       496 wire bits
        34 public wires
@@ -48,7 +48,7 @@ RESOURCE STATISTICS
 === next_pc_mux ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
         4 wires
        97 wire bits
         4 public wires
@@ -61,7 +61,7 @@ RESOURCE STATISTICS
 === branch_target ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
       135 wires
       228 wire bits
         3 public wires
@@ -78,7 +78,7 @@ RESOURCE STATISTICS
 === writeback_mux ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
         4 wires
        97 wire bits
         4 public wires
@@ -91,7 +91,7 @@ RESOURCE STATISTICS
 === $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000 ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
      8749 wires
     16878 wire bits
       265 public wires
@@ -108,7 +108,7 @@ RESOURCE STATISTICS
 === alu ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
       590 wires
       685 wire bits
         5 public wires
@@ -130,7 +130,7 @@ RESOURCE STATISTICS
 === alu_control ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
        16 wires
        21 wire bits
         4 public wires
@@ -146,7 +146,7 @@ RESOURCE STATISTICS
 === alu_src_mux ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
         4 wires
        97 wire bits
         4 public wires
@@ -159,7 +159,7 @@ RESOURCE STATISTICS
 === immediate_generator ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
        22 wires
        99 wire bits
         5 public wires
@@ -177,7 +177,7 @@ RESOURCE STATISTICS
 === register_file ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
      3505 wires
      4664 wire bits
        41 public wires
@@ -198,7 +198,7 @@ RESOURCE STATISTICS
 === control_unit ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
        55 wires
        71 wire bits
        11 public wires
@@ -217,7 +217,7 @@ RESOURCE STATISTICS
 === $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
        69 wires
       167 wire bits
         4 public wires
@@ -237,7 +237,7 @@ RESOURCE STATISTICS
 === program_counter ===
 
         +----------Local Count, excluding submodules.
-        | 
+        |
         4 wires
        66 wire bits
         4 public wires
@@ -250,7 +250,7 @@ RESOURCE STATISTICS
 === design hierarchy ===
 
         +----------Count including submodules.
-        | 
+        |
     22445 rv32i_core
        83 $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
     16740 $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
@@ -266,7 +266,7 @@ RESOURCE STATISTICS
        32 writeback_mux
 
         +----------Count including submodules.
-        | 
+        |
     13220 wires
     23666 wire bits
       388 public wires
