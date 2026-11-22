@@ -8,7 +8,7 @@ storage and control-flow modules used in the next integration phase.
 
 Phase 2 integrates the complete single-cycle datapath for `ADD`, `SUB`, `AND`,
 `OR`, `XOR`, `ADDI`, `LW`, `SW`, `BEQ`, and `BNE`. Dedicated processor,
-memory, and ALU integration suites verify the full path, including signed
+memory, ALU, and branch integration suites verify the full path, including signed
 immediates, positive/negative memory offsets, branch equality decisions, and
 32-bit arithmetic boundary cases.
 
@@ -35,6 +35,7 @@ bash scripts/run_phase1_tests.sh
 bash scripts/run_phase2_integration.sh
 bash scripts/run_memory_integration.sh
 bash scripts/run_alu_integration.sh
+bash scripts/run_branch_integration.sh
 ./synthesize.sh
 ```
 
@@ -71,7 +72,7 @@ clock edges and verifies 14 instruction steps in total.
   The standalone memories default to 256 words. The prototype uses 14 instruction words.
   Reset sets the PC to zero and inhibits register writes.
 
-## Verification
+## Phase 1 verification evidence
 
 ```bash
 bash scripts/run_fetch_tests.sh &&
@@ -111,6 +112,31 @@ Running `bash scripts/run_full_cpu_test.sh` checks the expected final
 register and memory values and reports `FULL RV32I CPU TEST PASSED`:
 
 ![Full CPU integration test passing all register and memory checks](docs/figures/full-cpu-test-pass.png)
+
+## Phase 2 branch execution and assembly programs
+
+Samiksha implemented Saumya's M13 branch/PC and assembly-program work package.
+The [M13 guide](docs/phase2_branch_guide.md) documents branch decisions,
+expected PC routes, loop results and the handoff to Saumya for M14/M16.
+
+```bash
+bash scripts/run_branch_integration.sh
+# Optional source rebuild and committed-image verification
+brew install riscv64-elf-binutils
+bash scripts/build_branch_programs.sh --check
+```
+
+The six programs cover arithmetic, load/store execution, BEQ, BNE, a mixed
+ten-instruction workload and branch offsets of `+4092` and `-4096` bytes.
+All six pass 955 checks across 92 instruction steps, including 25 functional
+branch decisions. Logs, CSV execution traces and real VCD waveforms are
+generated under `build/branch/`. Both skipped register writes and skipped
+stores are checked. The [assembly sources](programs/) have matching GNU-built
+hex images and reproducible disassemblies under `build/branch_programs/`.
+
+All nine existing simulation runners and all 16 module lint/synthesis checks
+also passed with M13 present. M14 complete-processor verification and M16
+final documentation continue with Saumya under the team's role exchange.
 
 ## Synthesis
 

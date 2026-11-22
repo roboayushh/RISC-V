@@ -15,15 +15,15 @@
 //   - Parameterized instruction memory depth and program file
 //   - Parameterized data memory depth
 //   - Exposes PC, current instruction, and halt status for observability
-//   - Halt detection: flags when two consecutive identical PC values are
-//     seen (infinite loop / end-of-program pattern)
+//   - Completion observation: flags two consecutive identical PC samples
+//     when a program reaches its terminal branch-to-self
 //
 // Port summary:
 //   clk         — System clock (rising-edge active)
 //   reset       — Synchronous active-high reset
 //   pc_out      — Current program counter value
 //   instr_out   — Current instruction being executed
-//   halted      — High when processor is in an infinite loop (PC stuck)
+//   halted      — High when two consecutive sampled PC values match
 // =============================================================================
 
 module rv32i_top #(
@@ -62,10 +62,10 @@ module rv32i_top #(
     // =========================================================================
     // Halt detection
     // =========================================================================
-    // Detects end-of-program by observing two consecutive cycles with the
-    // same PC value. This happens when the program ends with an infinite loop
-    // (e.g., BEQ x0, x0, 0 — branch to self) or when PC runs past valid
-    // instructions and stalls on NOPs that don't change PC+4 flow.
+    // The assembly programs use BEQ x0, x0, 0 as a completion marker.
+    // Two consecutive matching PC samples raise this observation flag.
+    // The core continues executing the self-branch. NOPs advance PC by four,
+    // and a loop through several different PCs keeps this flag low.
     //
     // This is useful for testbenches: they can wait until `halted` goes high
     // rather than counting a fixed number of clock cycles.
