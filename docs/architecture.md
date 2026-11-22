@@ -1,9 +1,10 @@
 # Phase 1 architecture
 
 The runnable prototype is [rv32i_phase1_core](../rtl/rv32i_phase1_core.v). It
-uses [rv32i_core](../rtl/rv32i_core.v) as the instruction-fetch stage. The
-fetch stage has its own tests for the program counter and instruction memory.
-The integrated prototype adds decode, execution and register writeback.
+directly instantiates the program counter and instruction memory for the legacy
+Phase 1 arithmetic regression. [rv32i_core](../rtl/rv32i_core.v) is the
+complete Phase 2 processor. The fetch path still has focused tests for the
+program counter, instruction memory, and the full core's fetch outputs.
 
 ![Phase 1 arithmetic datapath and Phase 2 connections](figures/phase1-datapath.svg)
 
@@ -43,12 +44,13 @@ the decoder outputs, simulation commands and expected results.
 The [prototype video](../README.md#prototype-video) walks through the datapath
 and shows the full-core simulation.
 
-[rv32i_core_full](../rtl/rv32i_core_full.v) wires every block together,
+[rv32i_core](../rtl/rv32i_core.v), wrapped by
+[rv32i_top](../rtl/rv32i_top.v), wires every block together,
 including data memory, the writeback mux, the branch target adder and the
 next-PC mux, and runs the complete 10-instruction subset (ADD, SUB, AND, OR,
 XOR, ADDI, LW, SW, BEQ, BNE). The demo runs ADDI, ADD, SW, LW, BEQ and BNE.
-The waveform below is from the self-checking
-`tb_rv32i_core_full` run (`build/tb_rv32i_core_full.vcd`).
+The older `rv32i_core_full` test remains as an additional compatibility
+regression; the primary integration test is `tb_rv32i_integration`.
 
 ![Full-core integration test waveform](figures/full-cpu-waveform.png)
 
@@ -70,6 +72,6 @@ and the final `FULL RV32I CPU TEST PASSED` banner:
 
 ![Full CPU integration test passing all register and memory checks](figures/full-cpu-test-pass.png)
 
-Generic Yosys synthesis of this core reports 22374 cells and 9248 flip-flops
+Generic Yosys synthesis of this core reports 22,445 cells and 9,248 flip-flops
 with no inferred latches. See [synthesis statistics](synthesis.md) for the full
 per-module and cell-type tables.

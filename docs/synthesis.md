@@ -1,23 +1,21 @@
 # Synthesis statistics
 
-Generic synthesis of the full 10-instruction core (`rv32i_core_full`) with
-Yosys (`synth -top rv32i_core_full`). These numbers are reproducible with:
+Generic synthesis of the full 10-instruction core (`rv32i_core`) with Yosys.
+The checked-in numbers include the initialized instruction ROM and are
+reproducible with:
 
 ```bash
-yosys -p "read_verilog rtl/*.v; hierarchy -top rv32i_core_full; \
-          synth -top rv32i_core_full; stat"
+./synthesize.sh
 ```
-
-![Yosys synthesis statistics for rv32i_core_full](figures/synthesis-stats.png)
 
 ## Design summary
 
 | Metric | Value |
 |---|---|
-| Top module | `rv32i_core_full` |
-| Total cells (incl. submodules) | 22374 |
+| Top module | `rv32i_core` |
+| Total cells (incl. submodules) | 22445 |
 | Flip-flops (sequential state) | 9248 |
-| Wires / wire bits | 13168 / 23645 |
+| Wires / wire bits | 13220 / 23666 |
 | Ports / port bits | 62 / 997 |
 | Clocks per instruction (CPI) | 1 (single-cycle) |
 
@@ -40,12 +38,13 @@ silicon gate count.
 
 | Module | Cells |
 |---|---|
-| rv32i_core_full (top) | 22374 |
+| rv32i_core (top) | 22445 |
 | data_memory | 16740 |
-| register_file | 4553 |
-| alu | 620 |
-| branch_target | 172 |
-| control_unit | 54 |
+| register_file | 4552 |
+| alu | 618 |
+| branch_target | 164 |
+| instruction_memory | 83 |
+| control_unit | 53 |
 | alu_src_mux | 32 |
 | next_pc_mux | 32 |
 | program_counter | 32 |
@@ -59,17 +58,20 @@ silicon gate count.
 |---|---|---|
 | `$_DFFE_PP_` | 9216 | Register-file and data-memory storage bits |
 | `$_SDFF_PP0_` | 32 | Program-counter bits (synchronous reset) |
-| `$_MUX_` | 9540 | Read-port, writeback, operand and next-PC selection |
-| `$_AND_` | 1083 | Combinational logic |
-| `$_NAND_` | 1059 | Combinational logic |
-| `$_NOR_` | 423 | Combinational logic |
-| `$_ORNOT_` | 362 | Combinational logic |
-| `$_ANDNOT_` | 289 | Combinational logic |
-| `$_OR_` | 215 | Combinational logic |
-| `$_XOR_` | 93 | ALU arithmetic / XOR |
-| `$_XNOR_` | 47 | Combinational logic |
-| `$_NOT_` | 15 | Combinational logic |
-| **Total** | **22374** | |
+| `$_MUX_` | 9543 | Read-port, ROM, writeback, operand and next-PC selection |
+| `$_AND_` | 1301 | Combinational logic |
+| `$_NAND_` | 1064 | Combinational logic |
+| `$_NOR_` | 246 | Combinational logic |
+| `$_ORNOT_` | 356 | Combinational logic |
+| `$_ANDNOT_` | 120 | Combinational logic |
+| `$_OR_` | 409 | Combinational logic |
+| `$_XOR_` | 90 | ALU arithmetic / XOR |
+| `$_XNOR_` | 49 | Combinational logic |
+| `$_NOT_` | 19 | Combinational logic |
+| **Total** | **22445** | |
 
 Synthesis completes with no inferred latches; all state is in explicit,
 clock-edge flip-flops. The single-cycle organisation gives a fixed CPI of 1.
+The full raw table, generic logic-depth results, and generated netlist are in
+[`synthesis_report.txt`](../synthesis_report.txt) and
+[`netlist/rv32i_core_netlist.v`](../netlist/rv32i_core_netlist.v).

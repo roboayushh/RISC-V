@@ -23,9 +23,17 @@ module instruction_memory #(
     wire [31:0] selected_word = memory[word_index];
 
     // Initialize unused locations to NOP, then load the program image.
+    //
+    // The fill loop is simulation-only.  Some synthesis tools flatten initial
+    // memory writes without preserving their procedural ordering and can let
+    // this default fill overwrite the later $readmemh contents.  Excluding the
+    // fill during synthesis leaves the program image as the sole ROM
+    // initialization source while retaining deterministic NOPs in simulation.
     initial begin
+`ifndef SYNTHESIS
         for (i = 0; i < DEPTH; i = i + 1)
             memory[i] = NOP;
+`endif
 
         if (INIT_FILE != "")
             $readmemh(INIT_FILE, memory);

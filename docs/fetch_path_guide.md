@@ -172,7 +172,7 @@ RISC-V/
 ├── rtl/
 │   ├── program_counter.v         # fetch path
 │   ├── instruction_memory.v      # fetch path
-│   ├── rv32i_core.v              # fetch path
+│   ├── rv32i_core.v              # complete core, including fetch path
 │   ├── register_file.v
 │   └── data_memory.v
 ├── scripts/
@@ -326,20 +326,11 @@ INSTRUCTION MEMORY TEST PASSED
 
 ### 6.3 Integrated fetch path
 
-Compile all three RTL modules with the integration testbench:
+Run the maintained fetch suite (it compiles the complete core and all current
+dependencies):
 
 ```bash
-iverilog -g2005 -o build/tb_rv32i_core \
-  rtl/program_counter.v \
-  rtl/instruction_memory.v \
-  rtl/rv32i_core.v \
-  testbench/tb_rv32i_core.v
-```
-
-Run:
-
-```bash
-vvp build/tb_rv32i_core
+bash scripts/run_fetch_tests.sh
 ```
 
 Expected final status:
@@ -429,7 +420,8 @@ The Program Counter itself does not calculate `PC + 4`; that calculation is in `
 - Connects the Program Counter to Instruction Memory.
 - Calculates `pc + 4` for the next sequential instruction address.
 - Outputs the current `pc` and fetched `instruction`.
-- Does not yet contain decode, execute, branch, jump, memory-write, or register-write logic.
+- Integrates decode, execute, load/store, register write-back, and BEQ/BNE
+  next-PC selection for the complete ten-instruction subset.
 
 For a block diagram and design assumptions, see [`architecture.md`](architecture.md).
 

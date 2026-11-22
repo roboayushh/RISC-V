@@ -60,6 +60,16 @@ run_test \
     "RV32I FETCH-PATH TEST PASSED" \
     rtl/program_counter.v \
     rtl/instruction_memory.v \
+    rtl/control_unit.v \
+    rtl/register_file.v \
+    rtl/immediate_generator.v \
+    rtl/alu_src_mux.v \
+    rtl/alu_control.v \
+    rtl/alu.v \
+    rtl/data_memory.v \
+    rtl/writeback_mux.v \
+    rtl/branch_target.v \
+    rtl/next_pc_mux.v \
     rtl/rv32i_core.v \
     testbench/tb_rv32i_core.v
 
