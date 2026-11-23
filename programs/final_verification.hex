@@ -1,0 +1,25 @@
+04000093 // 00 ADDI x1,x0,64
+ff900113 // 04 ADDI x2,x0,-7
+0020a023 // 08 SW   x2,0(x1)
+0000a183 // 0c LW   x3,0(x1)
+00218233 // 10 ADD  x4,x3,x2
+402182b3 // 14 SUB  x5,x3,x2
+0021f333 // 18 AND  x6,x3,x2
+0012e3b3 // 1c OR   x7,x5,x1
+0021c433 // 20 XOR  x8,x3,x2
+00218463 // 24 BEQ  x3,x2,+8
+0020a223 // 28 skipped SW x2,4(x1)
+00219463 // 2c BNE  x3,x2,+8 (fall through)
+00100493 // 30 ADDI x9,x0,1
+00049463 // 34 BNE  x9,x0,+8
+06300493 // 38 skipped ADDI x9,x0,99
+022084b3 // 3c unsupported MUL x9,x1,x2
+002094b3 // 40 unsupported SLL x9,x1,x2
+0010e493 // 44 unsupported ORI x9,x1,1
+00008483 // 48 unsupported LB x9,0(x1)
+00008023 // 4c unsupported SB x0,0(x1)
+0020c463 // 50 unsupported BLT x1,x2,+8
+ffffffff // 54 unrecognized opcode
+0000a503 // 58 LW   x10,0(x1)
+00500013 // 5c ADDI x0,x0,5 (discard)
+00000063 // 60 BEQ  x0,x0,0
