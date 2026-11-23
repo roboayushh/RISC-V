@@ -37,3 +37,15 @@ The [annotated machine-code image](../programs/final_verification.hex) runs on t
 | Legal operation after unsupported words | LW at 0x58 reloads -7 into x10. Writing 5 to x0 leaves x0 zero. The terminal self-branch keeps PC at 0x60. |
 
 **Failure-path check.** In a disposable copy, the ADDI decoder was changed to accept ORI. The final bench stopped at PC 0x44 on instruction 0x0010e493, the decoder suite also failed, and the runner returned nonzero with nine suites passing and two failing.
+
+## Demonstration sequence
+
+1. **Ankit — datapath.** Use the final presentation to trace one load from PC through ROM, register file, address adder and RAM to writeback.
+2. **Saumya — regression.** Run `./run_tests.sh`. Show the eleven suite results and open `build/regression/final_cpu.log`. In `tb_final_verification.vcd`, inspect PC, instruction, write enables and PCSrc between PCs 0x3c and 0x58.
+3. **Samiksha — mixed assembly.** Open `programs/integration.S` beside `build/branch/integration.csv`. At 71 and 101 ns, BNE selects 0x0c from PC 0x14. At 131 ns it selects 0x18, exiting the loop.
+4. **Rashmi — memory waveform.** Open `build/branch/integration.vcd` in a VCD viewer. In `dut.u_core`, add pc, clk, MemWrite, MemRead, alu_result, reg_data2 and write_back_data. At 141 ns the store presents address 64 and data 6. At 151 ns the load presents 6 for writeback to x4.
+5. **Ayush — synthesis.** Show the generic cell totals and explain the candidate LW critical path. The 10 ns simulation clock is a stimulus setting. Device frequency requires a target library, constraints and timing analysis.
+
+## Synthesis provenance and scope
+
+The [committed synthesis report](../synthesis_report.txt) records Verilator lint PASS, Yosys structural PASS, 22,445 generic cells, 9,216 enabled flip-flops, 32 PC flip-flops and 9,543 mux cells. The ALU and branch-target blocks have longest generic topological paths of 69 and 62 levels. The [timing analysis](../timing_analysis.md) explains the load-path risk and the technology mapping needed to estimate frequency. These figures come from Ayush's synthesis run. The M14 regression reruns RTL simulations. The live team demonstration remains a presentation activity.
