@@ -15,6 +15,12 @@ immediates, positive/negative memory offsets, branch equality decisions, and
 [Phase 1 report (IEEE PDF)](docs/phase1-report.pdf) · [LaTeX source](docs/phase1-report.tex) ·
 [Architecture](docs/architecture.md) · [Control truth table and waveforms](docs/control_phase1_guide.md)
 
+## Final submission
+
+Run `./run_tests.sh` to reproduce the eleven-suite processor regression. The verification report includes the team demonstration sequence and waveform signals.
+
+[Project report (PDF)](docs/final_project_report.pdf) · [Presentation (PowerPoint)](docs/final_presentation.pptx) · [Verification report](docs/verification_report.md) · [Simulation evidence (ZIP)](docs/verification_evidence.zip)
+
 ## Prototype video
 
 [Watch the 4:40 prototype demonstration](https://drive.google.com/file/d/1h3wr6jaVHCT1d3m6KTbqFU8Jfo3WYwjh/view) ·
