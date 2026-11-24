@@ -152,13 +152,24 @@ program counter 32), with no inferred latches. The single-cycle organisation
 gives a fixed CPI of 1. Full resource tables are in
 [docs/synthesis.md](docs/synthesis.md).
 
-The Phase 2 synthesis workflow is [`synthesize.sh`](synthesize.sh). It runs
+The synthesis workflow is [`synthesize.sh`](synthesize.sh). It runs
 Verilator lint, the end-to-end ALU integration test, Yosys synthesis and
 structural checks, creates
 [`netlist/rv32i_core_netlist.v`](netlist/rv32i_core_netlist.v), and refreshes
 [`synthesis_report.txt`](synthesis_report.txt). See
 [`timing_analysis.md`](timing_analysis.md) for the load critical path, generic
 logic-depth results, resource interpretation, and single-cycle timing limits.
+
+**Timing / maximum operating frequency.** The `LW` critical path is ≈ 90 generic
+gate levels (ALU-dominated), giving an estimated **Fmax ≈ 70–140 MHz** for a
+generic standard-cell process; the derivation and the exact Vivado recipe for a
+vendor-accurate number are in [docs/synthesis.md](docs/synthesis.md#timing-and-maximum-operating-frequency)
+and [`timing_analysis.md`](timing_analysis.md#estimated-maximum-operating-frequency).
+
+**Baseline comparison.** [docs/comparison.md](docs/comparison.md) compares this
+single-cycle design (CPI = 1, long clock period) against multi-cycle and
+pipelined alternatives for the same RV32I subset — CPI, clock period, throughput,
+hazards and resource trade-offs.
 
 ## Team contributions
 

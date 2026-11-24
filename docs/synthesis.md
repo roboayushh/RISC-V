@@ -75,3 +75,97 @@ clock-edge flip-flops. The single-cycle organisation gives a fixed CPI of 1.
 The full raw table, generic logic-depth results, and generated netlist are in
 [`synthesis_report.txt`](../synthesis_report.txt) and
 [`netlist/rv32i_core_netlist.v`](../netlist/rv32i_core_netlist.v).
+
+## Timing and maximum operating frequency
+
+### Why the number needs a technology
+
+Generic Yosys synthesis is an **area-only** mapping: it emits abstract gates
+(`$_AND_`, `$_MUX_`, …) that carry no picosecond delay, so it cannot by itself
+print a maximum frequency. A silicon-accurate Fmax needs either a standard-cell
+library (`read_liberty …; abc -liberty …` static timing) or an FPGA
+place-and-route flow (Vivado). We therefore report the **technology-independent
+critical-path depth** (measured and committed in `synthesize.sh`'s report), turn
+it into a transparent **Fmax estimate**, and give the exact recipe for the
+authoritative vendor number.
+
+### Critical-path logic depth (measured)
+
+Longest combinational depth per block, in generic mapped gate levels, taken from
+the committed [`synthesis_report.txt`](../synthesis_report.txt) (`ltp` after
+`abc`):
+
+| Block | Depth (levels) | Note |
+|---|---:|---|
+| **alu** | **69** | 32-bit ripple-carry add/sub — the bottleneck |
+| branch_target | 57 | PC + B-immediate 32-bit adder (branch path only) |
+| register_file | 10 | async-read 32:1 address mux |
+| data_memory | 9 | async-read 256-word address mux |
+| control_unit | 7 | opcode/funct → control signals |
+| alu_control | 5 | ALUOp + funct → operation |
+| immediate_generator | 3 | I/S/B immediate select + sign extend |
+| writeback_mux / next_pc_mux | 1 | single 2:1 selection |
+
+### Single-cycle critical path (the LW path)
+
+In a single-cycle machine the clock period must cover the **worst** instruction,
+`LW`: fetch → register read → address add → data-memory read → write-back, all in
+one cycle.
+
+```
+PC(FF) → instruction_memory → register_file read → alu_src_mux
+       → ALU (address add) → data_memory read → writeback_mux → register_file D (setup)
+```
+
+Summing the measured depths along that path (`alu_src_mux` is a single 2:1 mux):
+
+| Stage | Levels |
+|---|---:|
+| register_file read | 10 |
+| alu_src_mux | 1 |
+| **ALU add** | **69** |
+| data_memory read | 9 |
+| writeback_mux | 1 |
+| **Datapath critical path** | **≈ 90** |
+
+`control_unit` (7) runs in parallel with register read and is off the critical
+path; `instruction_memory` read adds the fetch stage ahead of it. The 32-bit
+ripple-carry adder is ≈ 77 % of the path — the one block worth optimizing
+(carry-lookahead / carry-select would shorten it directly).
+
+### Fmax estimate
+
+With no cell library on hand, Fmax is estimated as `1 / (depth × t_level)` for a
+representative per-level delay `t_level` (a 2-input gate plus local routing in a
+mature sub-micron standard-cell process is ≈ 0.08–0.16 ns):
+
+| t_level | Critical path (90 levels) | Estimated Fmax |
+|---:|---:|---:|
+| 0.08 ns | 7.2 ns | ≈ 140 MHz |
+| 0.12 ns | 10.8 ns | ≈ 93 MHz |
+| 0.16 ns | 14.4 ns | ≈ 69 MHz |
+
+**Headline: ≈ 70–140 MHz (generic standard-cell estimate).** On a 7-series FPGA
+the ripple-carry adder maps onto the dedicated carry chain rather than 69 LUT
+levels, so an FPGA Fmax is usually set by the memory-read path and tends to land
+higher than this conservative gate-level estimate. These are engineering
+estimates, not timing closure.
+
+### Authoritative Fmax (Vivado flow)
+
+For a vendor-accurate number, run the suggested FPGA flow and read the timing
+report. Set a target clock, implement, and inspect the worst negative slack
+(WNS); achievable Fmax = `1 / (T_target − WNS)`:
+
+```tcl
+# Vivado (e.g. Artix-7 xc7a35t). rv32i_top is the synthesis top.
+read_verilog [glob rtl/*.v]
+synth_design -top rv32i_top -part xc7a35tcpg236-1
+create_clock -name clk -period 20.000 [get_ports clk]   ;# 50 MHz target
+opt_design; place_design; route_design
+report_timing_summary -file build/logs/vivado_timing.rpt
+# Fmax = 1 / (20 ns - WNS)
+```
+
+See [comparison.md](comparison.md) for how CPI, clock period and Fmax trade off
+against multi-cycle and pipelined baselines.

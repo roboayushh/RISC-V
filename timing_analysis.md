@@ -69,4 +69,33 @@ For a production target, the next steps are to choose a cell/FPGA library, add
 clock and I/O constraints, infer or instantiate RAMs, and run post-place-route
 static timing analysis. To improve frequency structurally, split fetch,
 decode, execute, memory, and write-back across multiple cycles or pipeline
-registers.
+registers (quantified in [`docs/comparison.md`](docs/comparison.md)).
+
+## Estimated maximum operating frequency
+
+A silicon-accurate Fmax needs a target library and placed-and-routed timing, but
+the committed logic-depth report supports a transparent first-order estimate.
+Summing the measured per-block depths along the `LW` critical path (from
+`synthesis_report.txt`: register-file read 10 + operand mux 1 + ALU add 69 +
+data-memory read 9 + write-back mux 1) gives a datapath critical path of
+**≈ 90 generic gate levels**, of which the 32-bit ripple-carry ALU is ≈ 77 %.
+
+Estimating Fmax as `1 / (depth × t_level)` for a representative per-level delay
+`t_level` (a 2-input gate plus local routing, ≈ 0.08–0.16 ns in a mature
+sub-micron standard-cell process):
+
+| t_level | Critical path (90 levels) | Estimated Fmax |
+|---:|---:|---:|
+| 0.08 ns | 7.2 ns | ≈ 140 MHz |
+| 0.12 ns | 10.8 ns | ≈ 93 MHz |
+| 0.16 ns | 14.4 ns | ≈ 69 MHz |
+
+**Headline: ≈ 70–140 MHz (generic estimate, not timing closure.)** On a 7-series
+FPGA the ripple-carry adder maps to the dedicated carry chain rather than 69 LUT
+levels, so a real FPGA Fmax is usually set by the memory-read path and tends to
+be higher than this conservative estimate.
+
+For the authoritative vendor number, run the Vivado flow in
+[`docs/synthesis.md`](docs/synthesis.md#authoritative-fmax-vivado-flow):
+`synth_design` → `create_clock` → `place_design`/`route_design` →
+`report_timing_summary`, then `Fmax = 1 / (T_target − WNS)`.
