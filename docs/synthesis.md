@@ -98,7 +98,7 @@ the committed [`synthesis_report.txt`](../synthesis_report.txt) (`ltp` after
 | Block | Depth (levels) | Note |
 |---|---:|---|
 | **alu** | **69** | 32-bit ripple-carry add/sub — the bottleneck |
-| branch_target | 57 | PC + B-immediate 32-bit adder (branch path only) |
+| branch_target | 62 | PC + B-immediate 32-bit adder (branch path only) |
 | register_file | 10 | async-read 32:1 address mux |
 | data_memory | 9 | async-read 256-word address mux |
 | control_unit | 7 | opcode/funct → control signals |
