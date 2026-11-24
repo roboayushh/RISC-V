@@ -29,7 +29,17 @@ The processor must support three observable classes of change: a value written t
 
 The report proceeds from this contract to its implementation and measured behavior. Appendix~\ref{app:baseline} shows the arithmetic baseline. The full datapath and instruction encodings appear in Appendix~\ref{app:enc}. Appendices~\ref{app:memory} and~\ref{app:assembly} trace memory and branches. Appendix~\ref{app:accept} isolates a decoder fault; Appendix~\ref{app:repro} explains how to reproduce the measurements. An address such as \texttt{0x40} is hexadecimal. In the examples that address is decimal 64 and refers to word 16 of a 32-bit memory. The data stored at that address depends on the program.
 
-\section{Processor Architecture}
+\section{Literature Review}
+The RV32I base instruction set defines a 32-bit load/store architecture with fixed-width base instructions, 32 integer registers, and immediate encodings that keep register fields in consistent positions~\cite{isa}. These choices simplify a teaching datapath because the same register-file ports serve arithmetic, memory-address, and branch-comparison operations. Patterson and Hennessy present the single-cycle organization as a direct mapping from instruction semantics to fetch, decode, execute, memory, and writeback hardware~\cite{cod}. Harris and Harris use the same progression to show how a working single-cycle datapath can be divided first into multi-cycle steps and then into pipeline stages~\cite{harris}.
+
+The three organizations make different timing and control trade-offs. A single-cycle processor completes every instruction in one long clock period, so its CPI is one and its clock is constrained by the slowest instruction, normally a load. A multi-cycle processor reuses hardware across shorter cycles under finite-state control, reducing the clock period while giving different instructions different cycle counts. A pipelined processor overlaps instructions and can approach one completed instruction per cycle after filling, but it requires forwarding, stalls, and branch recovery. The course project specification identifies the single-cycle processor as the functional baseline from which a five-stage implementation and hazard handling can later be studied.
+
+Open-source RISC-V cores demonstrate additional design points. PicoRV32 is a configurable, size-oriented core that implements a wider RV32I/RV32IMC scope and uses a multi-cycle organization to reduce hardware cost~\cite{picorv32}. NERV is explicitly described as an educational RISC-V processor and is used as a simple target for formal ISA checking~\cite{nerv}. These cores pursue flexibility, compactness, or formal compliance. The present work instead fixes a ten-instruction subset and exposes the complete datapath so that instruction fields, control signals, and clock-edge state changes can be explained directly.
+
+Processor verification also ranges from directed simulation to formal proof. Directed self-checking programs are effective for demonstrating a concrete path through arithmetic, memory, and branches, and waveforms help localize an incorrect enable or selection. The riscv-formal framework defines the RISC-V Formal Interface and generates bounded checks for architectural behavior~\cite{riscvformal}. This project uses directed simulation because the submitted core does not expose RVFI and because the required deliverables emphasize programs and waveform evidence. The whole-state acceptance bench reduces a common weakness of directed testing by comparing every register and test-memory word after each executed instruction. Formal compliance across all encodings remains future work.
+
+\section{Proposed Solution}
+\subsection{Processor Architecture}
 
 The core follows the single-cycle organization described in~\cite{cod}. Between successive rising edges, the current program counter (PC) selects an instruction, the register file supplies operands, and combinational logic determines the next PC and any pending writes. The rising edge commits the state changes. The instruction following a load can read the new register value during the next cycle.
 
@@ -119,7 +129,7 @@ The regression driver collects one log per suite, checks process status, detects
 
 To test the failure path, a disposable RTL copy widened the ADDI decoder to accept the unsupported ORI function. The test image, expected states, and runner were held constant. This experiment examines whether a known fault can be localized to its first erroneous control decision.
 
-\section{Experimental Results}
+\section{Results and Discussion}
 
 \subsection{Arithmetic and Memory Operations}
 
@@ -206,11 +216,15 @@ For $N$ executed instructions the ideal single-cycle execution time is $NT_\math
 
 A multi-cycle version could keep intermediate values between fetch, decode, execute, memory and writeback. A controller would select the required steps for each instruction. A shorter clock period could then be traded against multiple cycles per instruction. A pipelined version could overlap those stages across instructions. A load immediately followed by an ADD using its result would require forwarding or a stall, and a taken branch would require handling younger instructions fetched on the sequential path. Neither alternative was implemented or benchmarked in this project. The comparison identifies the design changes needed to obtain a different throughput or timing target.
 
-\section{Reproducibility and Contributions}
-
-From the repository root, \texttt{./run\_tests.sh} compiles and runs all eleven suites with Bash, Icarus Verilog, and VVP. The archived evidence includes 17 logs, six instruction traces in CSV format, and 26 VCD waveforms~\cite{project}. The CSV and waveform records for the mixed program support Table~\ref{tab:loop} and Fig.~\ref{fig:mixed_trace}. The annotated acceptance program and self-checking bench specify the expected state comparisons. The resource counts and logic depths come from the separately recorded synthesis run.
+\section{Individual Contributions}
 
 Ankit Raj Singh integrated the core and top-level datapath. Rashmi Anand integrated and verified load/store execution. Ayush verified integrated ALU behavior and documented synthesis and timing. Samiksha Jangid developed the branch and assembly workloads. Saumya integrated the regression, developed the processor-level acceptance test, and prepared the verification and final submission materials.
+
+The role exchange for Phase~2 is reflected in this breakdown: Samiksha completed the M13 branch, PC-route, and assembly workload originally allocated to Saumya, while Saumya completed the M14 full-processor regression and M16 documentation work originally allocated to Samiksha. The final demonstration remains a team deliverable.
+
+\section{Reproducibility}
+
+From the repository root, \texttt{./run\_tests.sh} compiles and runs all eleven suites with Bash, Icarus Verilog, and VVP. The archived evidence includes 17 logs, six instruction traces in CSV format, and 26 VCD waveforms~\cite{project}. The CSV and waveform records for the mixed program support Table~\ref{tab:loop} and Fig.~\ref{fig:mixed_trace}. The annotated acceptance program and self-checking bench specify the expected state comparisons. The resource counts and logic depths come from the separately recorded synthesis run.
 
 \subsection{Inspection of the Recorded Evidence}
 The submitted records permit three independent checks of the mixed workload. The CSV file records one sample per executed step. Filtering on PC 0x14 yields the three next-PC choices in Table~\ref{tab:loop}. The VCD file records changes between those samples, including the edge that writes RAM word 16. Finally, the branch testbench compares the complete expected register and memory arrays after the workload. Together these checks distinguish selecting the right address, asserting the right enable, and committing the right data.
@@ -232,10 +246,14 @@ PC or range (hex) & Expected and observed effect\\\midrule
 
 The integrated core executed the ten supported instructions across arithmetic, memory transfer, and conditional control flow. The mixed program provides a traceable chain from the backward branch through RAM to the final register write. Independent state comparisons and a controlled decoder fault demonstrated that the regression can detect a specific unintended write request at its source. These results establish directed coverage for the tested programs and encodings. Exhaustive verification and device-specific frequency characterization remain open.
 
-\begin{thebibliography}{5}
+\begin{thebibliography}{9}
 \bibitem{isa} A. Waterman and K. Asanovi\'c, Eds., \emph{The RISC-V Instruction Set Manual, Volume I: Unprivileged ISA}, ver. 20191213, Dec. 2019, ch. 2.
-\bibitem{project} Project team, \emph{Single-Cycle RISC-V Processor: RTL, Verification Evidence, and Synthesis Results}, project repository, rev. b127c5f, Nov. 2026. [Online]. Available: \url{https://github.com/roboayushh/RISC-V/tree/b127c5f}
+\bibitem{project} Project team, \emph{Single-Cycle RISC-V Processor: RTL, Verification Evidence, and Synthesis Results}, project repository, Nov. 2026. [Online]. Available: \url{https://github.com/roboayushh/RISC-V}
 \bibitem{cod} D. A. Patterson and J. L. Hennessy, \emph{Computer Organization and Design RISC-V Edition: The Hardware/Software Interface}, 2nd ed. Morgan Kaufmann, 2020, ch. 4.
+\bibitem{harris} S. L. Harris and D. M. Harris, \emph{Digital Design and Computer Architecture: RISC-V Edition}. Morgan Kaufmann, 2021, ch. 7.
+\bibitem{picorv32} YosysHQ, ``PicoRV32---A size-optimized RISC-V CPU,'' GitHub repository. [Online]. Available: \url{https://github.com/YosysHQ/picorv32}
+\bibitem{nerv} YosysHQ, ``NERV---Naive Educational RISC-V Processor,'' GitHub repository. [Online]. Available: \url{https://github.com/YosysHQ/nerv}
+\bibitem{riscvformal} YosysHQ, ``RISC-V Formal Verification Framework,'' GitHub repository. [Online]. Available: \url{https://github.com/YosysHQ/riscv-formal}
 \bibitem{icarus} S. Williams, \emph{Icarus Verilog}, ver. 13.0. [Online]. Available: \url{https://github.com/steveicarus/iverilog}
 \bibitem{yosys} C. Wolf, \emph{Yosys Open SYnthesis Suite}. [Online]. Available: \url{https://yosyshq.readthedocs.io/}
 \end{thebibliography}
