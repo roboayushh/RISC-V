@@ -1,12 +1,40 @@
-# Single-cycle RISC-V processor
+# Single-Cycle RV32I Processor
 
-A 32-bit processor in Verilog that executes ten RV32I instructions in one clock cycle each. The final assembly workload adds **3 + 2 + 1**, stores **6** at byte address **64**, reloads it into **x4**, and branches on the result. The testbenches check the path through the processor as well as its final state.
+A modular 32-bit processor written in Verilog for the **Modern Computer Architecture** course. The core executes ten instructions from the RV32I base ISA and completes each supported instruction in one clock cycle. This repository contains the synthesizable RTL, self-checking testbenches, assembly workloads, instruction images, waveforms, generic synthesis results, an IEEE-format final report, and the final presentation.
 
-**Project results** · 11 regression suites passed · 6 directed assembly programs · 22,445 generic cells in the synthesized core
+The main demonstration computes **3 + 2 + 1**, stores the result **6** at byte address **64**, reloads it into **x4**, and uses the result in later branches. The recorded trace shows the loop returning twice, exiting when its counter reaches zero, writing RAM, and loading the same value back.
+
+| Final result | Recorded evidence |
+|---|---:|
+| Supported instructions | 10 |
+| Automated regression | 11 suites passed, 0 failed |
+| Directed assembly workloads | 6 programs |
+| Branch-program execution | 92 checked steps, 955 checks |
+| Final whole-state test | 23 instruction steps |
+| Generic synthesis | 22,445 cells, 9,248 flip-flops |
 
 [Final IEEE report (PDF)](docs/final_project_report.pdf) · [Editable report (LaTeX)](docs/final_project_report.tex) · [Presentation](docs/final_presentation.pptx) · [Verification report](docs/verification_report.md) · [Recorded logs, traces and waveforms](docs/verification_evidence.zip)
 
-## Run the processor tests
+## Contents
+
+- [Project scope](#project-scope)
+- [Processor architecture](#processor-architecture)
+- [Supported instructions](#supported-instructions)
+- [Quick start](#quick-start)
+- [Verification](#verification)
+- [Assembly programs](#assembly-programs)
+- [Synthesis and performance](#synthesis-and-performance)
+- [Repository structure](#repository-structure)
+- [Team contributions](#team-contributions)
+- [Limitations](#limitations)
+
+## Project scope
+
+The course specification asks for a compact single-cycle processor with a visible fetch–decode–execute datapath, modular synthesizable RTL, dedicated testbenches, instruction-memory programs, waveform evidence, resource utilization, a quantitative performance observation, and comparison with an alternative architecture. This repository implements that scope with separate instruction and data memories and a ten-instruction subset.
+
+The implementation is intentionally small enough to trace by hand. It does not implement every RV32I instruction, exceptions, interrupts, privilege modes, CSRs, caches, or a pipeline. Unsupported encodings used by the final acceptance program advance the PC without changing architectural state.
+
+## Quick start
 
 From the repository root, run the following with Bash and Icarus Verilog (`iverilog` and `vvp`) on your path. On macOS with Homebrew, install the simulator with `brew install icarus-verilog`. The program images are included.
 
@@ -36,7 +64,34 @@ Open [the mixed assembly program](programs/integration.S) beside `build/branch/i
 
 Open `build/branch/integration.vcd` in GTKWave or VaporView. Under `dut.u_core`, display `clk`, `pc`, `PCSrc`, `MemWrite`, `MemRead`, `alu_result`, `reg_data2` and `write_back_data`. The rising edge at **145 ns** writes six into RAM word 16. At **155 ns**, x4 captures the load result. The [branch guide](docs/phase2_branch_guide.md) gives the expected route for each program. The [waveform gallery](docs/waveforms/README.md) includes the independent store/load example using 25.
 
-## Architecture
+## Processor architecture
+
+The complete Phase 2 core is [`rtl/rv32i_core.v`](rtl/rv32i_core.v). It integrates twelve reusable blocks. [`rtl/rv32i_top.v`](rtl/rv32i_top.v) wraps the core and exposes the current PC, instruction, and a completion signal used by program-level testbenches.
+
+```mermaid
+flowchart LR
+    PC[Program counter] --> IMEM[Instruction memory]
+    IMEM --> CTRL[Main control]
+    IMEM --> RF[Register file]
+    IMEM --> IMM[Immediate generator]
+    CTRL --> ALUCTRL[ALU control]
+    RF --> AMUX[ALU-source mux]
+    IMM --> AMUX
+    RF --> ALU[ALU]
+    AMUX --> ALU
+    ALU --> DMEM[Data memory]
+    RF --> DMEM
+    ALU --> WBMUX[Writeback mux]
+    DMEM --> WBMUX
+    WBMUX --> RF
+    PC --> BT[Branch target]
+    IMM --> BT
+    ALU --> DECIDE[Branch decision]
+    CTRL --> DECIDE
+    BT --> NPC[Next-PC mux]
+    DECIDE --> NPC
+    NPC --> PC
+```
 
 | Part | Design |
 |---|---|
@@ -49,7 +104,68 @@ Open `build/branch/integration.vcd` in GTKWave or VaporView. Under `dut.u_core`,
 
 The [integrated datapath diagram](docs/phase2_integration_guide.md) shows the connections. The [control table](docs/control_phase1_guide.md) identifies which signals change for each instruction. The [architecture comparison](docs/comparison.md) explains the trade-offs among single-cycle, multi-cycle and pipelined implementations.
 
-## Assembly, lint and synthesis
+## Supported instructions
+
+| Instruction | Format | Architectural effect |
+|---|---|---|
+| `ADD rd, rs1, rs2` | R | `rd = rs1 + rs2` |
+| `SUB rd, rs1, rs2` | R | `rd = rs1 - rs2` |
+| `AND rd, rs1, rs2` | R | `rd = rs1 & rs2` |
+| `OR rd, rs1, rs2` | R | `rd = rs1 \| rs2` |
+| `XOR rd, rs1, rs2` | R | `rd = rs1 ^ rs2` |
+| `ADDI rd, rs1, imm` | I | `rd = rs1 + sign_extend(imm)` |
+| `LW rd, imm(rs1)` | I | `rd = memory[rs1 + sign_extend(imm)]` |
+| `SW rs2, imm(rs1)` | S | `memory[rs1 + sign_extend(imm)] = rs2` |
+| `BEQ rs1, rs2, target` | B | Select the target when the operands are equal |
+| `BNE rs1, rs2, target` | B | Select the target when the operands differ |
+
+## Verification
+
+The verification strategy progresses from isolated modules to complete programs:
+
+1. **Module tests** validate PC updates, storage behavior, ALU functions, immediate formats, control decoding, and multiplexers.
+2. **Integrated instruction tests** check control signals and datapath results on the complete core.
+3. **Assembly workloads** check exact PC routes, register state, memory state, forward branches, backward loops, and signed branch-offset limits.
+4. **Whole-state acceptance** compares the PC, all 32 registers, and every word of a 32-word test RAM after each executed instruction.
+5. **Fault injection** verifies that the tests detect a decoder which incorrectly accepts ORI as ADDI.
+
+| Regression suite | Passing observation |
+|---|---|
+| `fetch` | Three benches for PC, instruction memory, and integrated fetch |
+| `storage` | Register file and data-memory tests, including invalid accesses |
+| `mux_immediate` | Immediate generator, ALU source, writeback, next-PC and branch-target tests |
+| `alu` | 17 ALU cases and 14 ALU-control cases |
+| `phase1` | 20 decoder cases, arithmetic-core execution, and depth-one memory boundaries |
+| `full_cpu` | Earlier complete-core workload retained as a compatibility check |
+| `integration` | 20 checks across all ten supported instructions |
+| `memory` | 34 checks of loads, stores, offsets, read-after-write and skipped operations |
+| `alu_integration` | 63 checks including wraparound, signed limits, addresses and branch comparisons |
+| `branch` | Six programs, 92 executed steps and 955 route/control/state checks |
+| `final_cpu` | 23 steps with full register/RAM comparison and seven unsupported encodings |
+
+The fault-injection experiment changes a disposable copy of the decoder so that the ADDI path also accepts ORI. The final processor bench detects the forbidden register-write enable at PC `0x44`; the standalone decoder suite also fails. The unmodified RTL passes all eleven suites. Details are in the [verification report](docs/verification_report.md).
+
+## Assembly programs
+
+| Program | Purpose | Key expected result |
+|---|---|---|
+| [`arithmetic.S`](programs/arithmetic.S) | Arithmetic and logical operations | ADD = 30, SUB = 10, AND = 8, OR = 14, XOR = 6 |
+| [`memory.S`](programs/memory.S) | Word stores and loads with signed offsets | Byte addresses 64 and 68 contain 25 and 50 |
+| [`branch_equal.S`](programs/branch_equal.S) | Taken/fall-through BEQ and backward loop | Skipped writes remain zero |
+| [`branch_not_equal.S`](programs/branch_not_equal.S) | Taken/fall-through BNE and backward loop | Loop terminates with its counter at zero |
+| [`integration.S`](programs/integration.S) | All ten instruction types in one workload | `x4 = 6`, `x11 = 42`, skipped stores remain zero |
+| [`branch_offsets.S`](programs/branch_offsets.S) | Aligned B-immediate limits | PC reaches targets at offsets `+4092` and `-4096` |
+
+The committed images are sufficient for simulation. To reproduce them, install GNU RISC-V Binutils and run:
+
+```bash
+brew install riscv64-elf-binutils
+bash scripts/build_branch_programs.sh --check
+```
+
+The builder uses RV32I with the ILP32 ABI, disables linker relaxation, links text at address zero, converts the extracted little-endian bytes into hexadecimal words, and compares every rebuilt image with its committed counterpart. Set `CROSS_COMPILE` if your tools use another prefix.
+
+## Synthesis and performance
 
 These workflows can be run independently of the simulation regression.
 
@@ -60,7 +176,18 @@ These workflows can be run independently of the simulation regression.
 | Synthesize the integrated core | `./synthesize.sh` | Verilator, Yosys and Icarus Verilog. Refreshes the tracked [netlist](netlist/rv32i_core_netlist.v) and [raw synthesis report](synthesis_report.txt). |
 | Rebuild the paper | `cd docs && latexmk -pdf final_project_report.tex` | A LaTeX installation with IEEEtran and the packages listed in the source. Tectonic can also compile the same file. |
 
-The committed generic mapping contains **9,248 flip-flops** and **9,543 multiplexers**. The register file and data RAM account for 9,216 enabled storage bits. The load combines address addition, RAM read and register writeback within one clock period. The team's **70–140 MHz** range is an illustrative calculation from assumed gate delays. A device rating requires a target, constraints and routed timing. See the [resource breakdown](docs/synthesis.md) and [timing model](timing_analysis.md).
+| Generic synthesis result | Value |
+|---|---:|
+| Total cells | 22,445 |
+| Enabled flip-flops | 9,216 |
+| Resettable PC flip-flops | 32 |
+| Multiplexers | 9,543 |
+| ALU block depth | 69 generic logic levels |
+| Branch-target block depth | 62 generic logic levels |
+
+The single-cycle organization has a fixed **CPI of 1** for supported instructions. Its clock period must cover the slowest instruction. The load path includes register read, address addition, data-memory read, writeback selection, and register setup within the same cycle.
+
+The documented **70–140 MHz range is an analytical estimate** calculated from assumed delay per generic logic level. It is not a measured device frequency. A valid FPGA or ASIC maximum frequency requires a target device or standard-cell library, clock constraints, mapped memories, placement, routing, and static timing analysis. See the [resource breakdown](docs/synthesis.md), [timing model](timing_analysis.md), and [single-cycle/multi-cycle/pipeline comparison](docs/comparison.md).
 
 ## Team contributions
 
@@ -72,8 +199,47 @@ The committed generic mapping contains **9,248 flip-flops** and **9,543 multiple
 | Samiksha | Main control and initial verification | Branch execution, PC routes and assembly programs (M13) |
 | Saumya | Immediate generator, multiplexers and branch target | Whole-processor acceptance, automated regression and final documentation (M14/M16) |
 
-## Repository guide
+The Phase 2 entries reflect the team’s agreed role exchange. Samiksha completed the M13 work originally allocated to Saumya, and Saumya completed the M14/M16 verification and documentation work originally allocated to Samiksha. The final demonstration is shared by the team.
 
-- [RTL](rtl/) and [testbenches](testbench/) contain the implementation and its self-checking simulations. The [final acceptance bench](testbench/tb_final_verification.v) reads the [annotated machine-code image](programs/final_verification.hex).
-- [Programs](programs/) and [scripts](scripts/) contain assembly, ROM images, build commands and individual simulation runners.
-- [Phase 1 IEEE report](docs/phase1-report.pdf) · [Phase 1 LaTeX source](docs/phase1-report.tex) · [Prototype video](https://drive.google.com/file/d/1h3wr6jaVHCT1d3m6KTbqFU8Jfo3WYwjh/view) · [Project video folder](https://drive.google.com/drive/folders/1daOmAHnOrNh-L1YhrbRlE5GaWKV3XGjL?usp=sharing)
+## Repository structure
+
+```text
+RISC-V/
+├── rtl/                    synthesizable processor modules
+├── testbench/              self-checking Verilog testbenches
+├── programs/               assembly sources and ROM images
+├── scripts/                focused test and image-build runners
+├── docs/                   reports, guides, figures and evidence
+├── netlist/                generated generic core netlist
+├── run_tests.sh            complete 11-suite regression
+├── synthesize.sh           lint, simulation and synthesis flow
+├── synthesis_report.txt    raw generic resource/path report
+└── timing_analysis.md      critical-path interpretation
+```
+
+Important entry points:
+
+- [`rtl/rv32i_core.v`](rtl/rv32i_core.v) — integrated processor implementation
+- [`testbench/tb_final_verification.v`](testbench/tb_final_verification.v) — whole-state acceptance test
+- [`programs/final_verification.hex`](programs/final_verification.hex) — annotated machine-code image used by that test
+- [`docs/phase2_integration_guide.md`](docs/phase2_integration_guide.md) — module connections and integrated datapath
+- [`docs/phase2_branch_guide.md`](docs/phase2_branch_guide.md) — PC routes and assembly evidence
+
+## Limitations
+
+- The core implements the ten instructions listed above, rather than the complete RV32I ISA.
+- The tests are directed simulations. They do not constitute exhaustive formal proof of all instruction words and machine states.
+- Register file and data memory use asynchronous reads. Generic synthesis maps their storage to flip-flops and selection logic instead of target-specific RAM macros.
+- The wrapper completion signal is a testbench convenience based on a repeated PC. It is outside the processor ISA.
+- The reported frequency range is a first-order estimate. No placed-and-routed FPGA or ASIC timing result is claimed.
+- A multi-cycle or pipelined implementation would require new control state, intermediate registers, and hazard verification.
+
+## Project documents
+
+- [Final report](docs/final_project_report.pdf) and [editable IEEE LaTeX](docs/final_project_report.tex)
+- [Final presentation](docs/final_presentation.pptx)
+- [Verification methodology and demonstration sequence](docs/verification_report.md)
+- [Architecture and control](docs/architecture.md)
+- [Synthesis resource analysis](docs/synthesis.md)
+- [Phase 1 IEEE report](docs/phase1-report.pdf) and [source](docs/phase1-report.tex)
+- [Prototype video](https://drive.google.com/file/d/1h3wr6jaVHCT1d3m6KTbqFU8Jfo3WYwjh/view) and [project video folder](https://drive.google.com/drive/folders/1daOmAHnOrNh-L1YhrbRlE5GaWKV3XGjL?usp=sharing)
