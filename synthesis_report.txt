@@ -1,7 +1,7 @@
 RV32I CORE SYNTHESIS REPORT
 ============================
 
-Yosys 0.70+post (git sha1 0c11ea098be065e585a90a06e7b7da49936cf231, Release, AppleClang clang++ 21.0.0.21000334)
+Yosys 0.71+post (git sha1 5628c13240f670b97aaaca3d47940c4afb8ff572, Release, AppleClang clang++ 21.0.0.21000401)
 
 Top module: rv32i_core
 Netlist: netlist/rv32i_core_netlist.v
@@ -32,7 +32,7 @@ RESOURCE STATISTICS
         1   $_XNOR_
        29   $_XOR_
        12 submodules
-        1   $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
+        1   $paramod$d3612500d59e495e622b4f4e75d2d3fff0d4e784\instruction_memory
         1   $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
         1   alu
         1   alu_control
@@ -62,18 +62,21 @@ RESOURCE STATISTICS
 
         +----------Local Count, excluding submodules.
         |
-      135 wires
-      228 wire bits
+      143 wires
+      236 wire bits
         3 public wires
        96 public wire bits
         3 ports
        96 port bits
-      164 cells
-       31   $_AND_
-       70   $_NAND_
-       10   $_OR_
-       12   $_XNOR_
-       41   $_XOR_
+      172 cells
+        5   $_ANDNOT_
+       20   $_AND_
+       74   $_NAND_
+        5   $_NOR_
+        5   $_ORNOT_
+        8   $_OR_
+       10   $_XNOR_
+       45   $_XOR_
 
 === writeback_mux ===
 
@@ -109,23 +112,23 @@ RESOURCE STATISTICS
 
         +----------Local Count, excluding submodules.
         |
-      590 wires
-      685 wire bits
+      592 wires
+      687 wire bits
         5 public wires
       100 public wire bits
         5 ports
       100 port bits
-      618 cells
-       10   $_ANDNOT_
+      620 cells
+        9   $_ANDNOT_
       141   $_AND_
         1   $_MUX_
-      239   $_NAND_
+      243   $_NAND_
         3   $_NOR_
         1   $_NOT_
        30   $_ORNOT_
       138   $_OR_
        36   $_XNOR_
-       19   $_XOR_
+       18   $_XOR_
 
 === alu_control ===
 
@@ -138,10 +141,13 @@ RESOURCE STATISTICS
         4 ports
         9 port bits
        15 cells
-        2   $_ANDNOT_
-        6   $_AND_
-        1   $_NAND_
-        6   $_OR_
+        1   $_ANDNOT_
+        4   $_AND_
+        1   $_MUX_
+        3   $_NAND_
+        1   $_NOR_
+        1   $_ORNOT_
+        4   $_OR_
 
 === alu_src_mux ===
 
@@ -178,61 +184,60 @@ RESOURCE STATISTICS
 
         +----------Local Count, excluding submodules.
         |
-     3505 wires
-     4664 wire bits
+     3506 wires
+     4665 wire bits
        41 public wires
      1169 public wire bits
         8 ports
       113 port bits
-     4552 cells
-       75   $_ANDNOT_
-      685   $_AND_
+     4553 cells
+      260   $_ANDNOT_
+      501   $_AND_
      1024   $_DFFE_PP_
      1280   $_MUX_
       707   $_NAND_
-      205   $_NOR_
+      391   $_NOR_
         5   $_NOT_
       320   $_ORNOT_
-      251   $_OR_
+       65   $_OR_
 
 === control_unit ===
 
         +----------Local Count, excluding submodules.
         |
-       55 wires
-       71 wire bits
+       56 wires
+       72 wire bits
        11 public wires
        27 public wire bits
        11 ports
        27 port bits
-       53 cells
-       13   $_ANDNOT_
-       17   $_AND_
+       54 cells
+       12   $_ANDNOT_
+       20   $_AND_
         2   $_MUX_
-       10   $_NAND_
+        7   $_NAND_
         6   $_NOR_
-        4   $_ORNOT_
-        1   $_OR_
+        5   $_ORNOT_
+        2   $_OR_
 
-=== $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory ===
+=== $paramod$d3612500d59e495e622b4f4e75d2d3fff0d4e784\instruction_memory ===
 
         +----------Local Count, excluding submodules.
         |
-       69 wires
-      167 wire bits
+      137 wires
+      234 wire bits
         4 public wires
-      102 public wire bits
+      101 public wire bits
         2 ports
        64 port bits
-       83 cells
-       16   $_ANDNOT_
-       22   $_AND_
-        4   $_MUX_
-       18   $_NAND_
-       15   $_NOR_
-        4   $_NOT_
-        1   $_ORNOT_
-        3   $_OR_
+      157 cells
+       17   $_ANDNOT_
+       55   $_AND_
+        5   $_MUX_
+       42   $_NAND_
+       17   $_NOR_
+        4   $_ORNOT_
+       17   $_OR_
 
 === program_counter ===
 
@@ -251,46 +256,46 @@ RESOURCE STATISTICS
 
         +----------Count including submodules.
         |
-    22445 rv32i_core
-       83 $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
+    22531 rv32i_core
+      157 $paramod$d3612500d59e495e622b4f4e75d2d3fff0d4e784\instruction_memory
     16740 $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
-      618 alu
+      620 alu
        15 alu_control
        32 alu_src_mux
-      164 branch_target
-       53 control_unit
+      172 branch_target
+       54 control_unit
        30 immediate_generator
        32 next_pc_mux
        32 program_counter
-     4552 register_file
+     4553 register_file
        32 writeback_mux
 
         +----------Count including submodules.
         |
-    13220 wires
-    23666 wire bits
+    13300 wires
+    23745 wire bits
       388 public wires
-    10772 public wire bits
+    10771 public wire bits
        62 ports
       997 port bits
         - memories
         - memory bits
         - processes
-    22445 cells
-      120   $_ANDNOT_
-     1301   $_AND_
+    22531 cells
+      308   $_ANDNOT_
+     1140   $_AND_
      9216   $_DFFE_PP_
-     9543   $_MUX_
-     1064   $_NAND_
-      246   $_NOR_
-       19   $_NOT_
-      356   $_ORNOT_
-      409   $_OR_
+     9545   $_MUX_
+     1095   $_NAND_
+      440   $_NOR_
+       15   $_NOT_
+      366   $_ORNOT_
+      234   $_OR_
        32   $_SDFF_PP0_
-       49   $_XNOR_
-       90   $_XOR_
+       47   $_XNOR_
+       93   $_XOR_
        12 submodules
-        1   $paramod$05a4bf018ac40ffd2994e74a8bf1e3f3275a4e31\instruction_memory
+        1   $paramod$d3612500d59e495e622b4f4e75d2d3fff0d4e784\instruction_memory
         1   $paramod\data_memory\DEPTH=s32'00000000000000000000000100000000
         1   alu
         1   alu_control
@@ -311,7 +316,7 @@ Longest topological path in alu_control (length=5):
 Longest topological path in register_file (length=10):
 Longest topological path in data_memory (length=9):
 Longest topological path in writeback_mux (length=1):
-Longest topological path in branch_target (length=62):
+Longest topological path in branch_target (length=57):
 Longest topological path in next_pc_mux (length=1):
 Longest topological path in immediate_generator (length=3):
 Longest topological path in control_unit (length=7):

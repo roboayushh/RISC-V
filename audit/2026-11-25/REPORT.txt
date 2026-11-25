@@ -1,3 +1,9 @@
+HISTORICAL AUDIT OF BASELINE 75b9c77
+Code, runner, default-demo and documentation corrections are recorded in
+docs/corrections.txt. Use scripts/check_acceptance.py on the corrected tree.
+The reproducer beside this report intentionally expects the original defects;
+run it only on the historical baseline. The evidence archive remains unchanged.
+
 RISC-V repository audit
 25 November 2026
 

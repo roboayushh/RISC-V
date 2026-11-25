@@ -27,9 +27,10 @@
 // =============================================================================
 
 module rv32i_top #(
-    parameter IMEM_DEPTH     = 64,
-    parameter IMEM_INIT_FILE = "programs/full_demo.hex",
-    parameter DMEM_DEPTH     = 256
+    parameter IMEM_DEPTH     = 22,
+    parameter IMEM_INIT_FILE = "programs/integration.hex",
+    parameter DMEM_DEPTH     = 256,
+    parameter IMEM_WORDS = IMEM_DEPTH
 ) (
     input  wire        clk,
     input  wire        reset,
@@ -47,6 +48,7 @@ module rv32i_top #(
 
     rv32i_core #(
         .IMEM_DEPTH     (IMEM_DEPTH),
+        .IMEM_WORDS     (IMEM_WORDS),
         .IMEM_INIT_FILE (IMEM_INIT_FILE),
         .DMEM_DEPTH     (DMEM_DEPTH)
     ) u_core (

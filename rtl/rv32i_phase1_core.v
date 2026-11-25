@@ -3,7 +3,8 @@
 // Phase 1 arithmetic datapath with sequential instruction fetch.
 module rv32i_phase1_core #(
     parameter IMEM_DEPTH = 14,
-    parameter IMEM_INIT_FILE = "programs/phase1_arithmetic.hex"
+    parameter IMEM_INIT_FILE = "programs/phase1_arithmetic.hex",
+    parameter IMEM_WORDS = IMEM_DEPTH
 ) (
     input  wire        clk,
     input  wire        reset,
@@ -38,7 +39,8 @@ module rv32i_phase1_core #(
 
     instruction_memory #(
         .DEPTH(IMEM_DEPTH),
-        .INIT_FILE(IMEM_INIT_FILE)
+        .INIT_FILE(IMEM_INIT_FILE),
+        .INIT_WORDS(IMEM_WORDS)
     ) imem (
         .address(pc),
         .instruction(instruction)

@@ -49,6 +49,7 @@ echo "      Compilation successful."
 echo ""
 
 echo "[2/2] Running simulation..."
-vvp build/tb_memory_integration
+vvp build/tb_memory_integration | tee "build/run_memory_integration.sh.log"
+grep -Fq "MEMORY INTEGRATION TEST PASSED" "build/run_memory_integration.sh.log"
 echo ""
 echo "Waveform: $ROOT_DIR/build/tb_memory_integration.vcd"

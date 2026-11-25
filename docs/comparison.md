@@ -2,8 +2,8 @@
 
 This project implements the **single-cycle** organization. This note compares it
 against the two standard alternatives for the same RV32I instruction subset, so
-the design choice is explained rather than assumed. Numbers for the single-cycle
-column are this design's own, measured results; the multi-cycle and pipelined
+the design choice is explained rather than assumed. The single-cycle
+column distinguishes structural properties from illustrative timing estimates; the multi-cycle and pipelined
 columns are the textbook characteristics of those organizations for the same ISA
 (Patterson & Hennessy; Harris & Harris).
 
@@ -13,13 +13,13 @@ columns are the textbook characteristics of those organizations for the same ISA
 |---|---|---|---|
 | CPI | **1 (fixed)** | 3–5 (varies by instruction) | ~1 ideal; >1 with stalls/flushes |
 | Clock period | Long — set by the worst instruction (`LW`) | Short — set by the slowest *single* stage | Short — set by the slowest *single* stage |
-| Critical path | **≈ 90 gate levels** (fetch→regread→ALU→DMEM→WB) | one stage (e.g. ALU or memory) | one stage |
-| Est. Fmax (generic) | **≈ 70–140 MHz** (see [synthesis.md](synthesis.md)) | higher than single-cycle | highest of the three |
-| Throughput | Fmax × 1 IPC | lower (several cycles per instruction) | up to ~1 instr/cycle at steady state |
+| Critical path | **≈ 90 levels, illustrative block sum** (excludes fetch delay) | one stage (e.g. ALU or memory) | one stage |
+| Est. Fmax (generic) | **≈ 70–140 MHz** (see [synthesis.md](synthesis.md)) | not implemented or measured | not implemented or measured |
+| Throughput | Fmax × 1 IPC | 1 / (CPI × clock period); no measured ranking | up to ~1 instr/cycle at steady state |
 | Control | Simple combinational decode | FSM-sequenced (micro-steps) | Combinational + hazard/forwarding logic |
 | Hazards | None (no overlap) | None (no overlap) | Data, control & structural hazards |
 | Register/state | PC + arch. regfile + data mem | + internal stage latches (IR, A, B, …) | + 4 pipeline registers (IF/ID … MEM/WB) |
-| Datapath reuse | Each unit used once per cycle; **one** ALU, one memory port | One ALU/memory reused across sub-steps | Separate stage resources; needs 2 memory ports (or split I/D) |
+| Datapath reuse | Each unit used once per cycle; **one** ALU, separate instruction and data memories | One ALU/memory reused across sub-steps | Separate stage resources; needs 2 memory ports (or split I/D) |
 | Design effort | Lowest | Medium (FSM) | Highest (forwarding, stall, flush) |
 
 ## Why single-cycle for this project
@@ -39,18 +39,19 @@ columns are the textbook characteristics of those organizations for the same ISA
 
 The single-cycle clock must cover the **longest** path — the `LW` path through
 fetch, register read, the 32-bit ALU add, the data-memory read and write-back
-(≈ 90 generic gate levels, of which the ripple-carry ALU is ≈ 77 %; see
+(an illustrative sum of ≈ 90 independently mapped levels, excluding fetch,
+routing, and register timing; see
 [synthesis.md](synthesis.md)). Cheaper instructions (e.g. `ADD`) finish sooner but
 still wait a full period, so the clock is paced by the worst case. That is the
 classic single-cycle trade-off:
 
 - **Multi-cycle** breaks the instruction into shorter sub-steps clocked faster,
-  reusing one ALU and one memory port across steps. Clock period drops to the
+  reusing one ALU and one memory port across steps. Clock period can drop toward the
   slowest single step, but each instruction now takes 3–5 cycles (CPI > 1), and a
   control FSM plus internal latches are required.
 - **Pipelining** overlaps the stages so a new instruction can issue (ideally)
   every cycle: the clock is again set by the slowest single stage, and steady-state
-  throughput approaches 1 instruction/cycle — the highest of the three. The price
+  throughput approaches 1 instruction/cycle when hazards and stage balance permit. The price
   is hazard handling: forwarding paths for data hazards, stalls for load-use, and
   flushes for taken branches (`BEQ`/`BNE`), plus four pipeline registers and split
   instruction/data memory access.
@@ -64,11 +65,11 @@ For an N-instruction program:
   or a memory read dominates, far shorter than `T_long`) and `k` ≈ 4 is the
   fill/drain overhead.
 
-Because `T_stage ≪ T_long`, a hazard-free pipeline approaches a speed-up of
+If `T_stage < T_long` after including pipeline overhead, a hazard-free pipeline approaches a speed-up of
 roughly `T_long / T_stage` for large N — concretely, splitting off the 69-level
 ALU from the ≈ 90-level single-cycle path is where most of that gain comes from.
 Real speed-up is reduced by stall/flush cycles, which is exactly the complexity a
 single-cycle design avoids. For this project's goals — a correct, readable,
-fully-verified RV32I core — the single-cycle organization is the right baseline;
+tested ten-instruction RV32I subset — the single-cycle organization is the right baseline;
 multi-cycle and pipelined designs are the natural next steps when throughput, not
 clarity, becomes the objective.

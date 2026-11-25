@@ -41,9 +41,10 @@
 // =============================================================================
 
 module rv32i_core #(
-    parameter IMEM_DEPTH     = 64,       // Number of instruction words
-    parameter IMEM_INIT_FILE = "programs/full_demo.hex",  // Program image
-    parameter DMEM_DEPTH     = 256       // Number of data memory words
+    parameter IMEM_DEPTH     = 22,       // Number of instruction words
+    parameter IMEM_INIT_FILE = "programs/integration.hex",  // Program image
+    parameter DMEM_DEPTH     = 256,      // Number of data memory words
+    parameter IMEM_WORDS = IMEM_DEPTH
 ) (
     input  wire        clk,
     input  wire        reset,
@@ -121,7 +122,8 @@ module rv32i_core #(
 
     instruction_memory #(
         .DEPTH     (IMEM_DEPTH),
-        .INIT_FILE (IMEM_INIT_FILE)
+        .INIT_FILE (IMEM_INIT_FILE),
+        .INIT_WORDS(IMEM_WORDS)
     ) u_imem (
         .address     (pc_current),
         .instruction (instruction)

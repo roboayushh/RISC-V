@@ -9,7 +9,7 @@
 # using Icarus Verilog. Generates a VCD waveform in build/.
 # =============================================================================
 
-set -e
+set -euo pipefail
 
 PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJ_DIR/build"
@@ -49,7 +49,8 @@ echo ""
 
 echo "[2/3] Running integration simulation..."
 echo ""
-vvp "$BUILD_DIR/tb_rv32i_integration"
+vvp "$BUILD_DIR/tb_rv32i_integration" | tee "build/run_phase2_integration.sh.log"
+grep -Fq "PHASE 2 INTEGRATION TEST PASSED" "build/run_phase2_integration.sh.log"
 echo ""
 
 echo "[3/3] Waveform saved to: $BUILD_DIR/tb_rv32i_integration.vcd"

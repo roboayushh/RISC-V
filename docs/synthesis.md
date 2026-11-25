@@ -1,8 +1,13 @@
 # Synthesis statistics
 
+The tables below record the original Yosys 0.70 submission: 22,445 cells.
+The corrected mixed-demo build with Yosys 0.71 has 22,531 cells, 9,545 muxes,
+9,248 flip-flops, and branch-target depth 57. See synthesis_report.txt for the
+current generated breakdown. Tool versions and program contents affect mapping.
+
 Generic synthesis of the full 10-instruction core (`rv32i_core`) with Yosys.
-The checked-in numbers include the initialized instruction ROM and are
-reproducible with:
+The current generated report includes the initialized instruction ROM.
+Regenerate the current build with:
 
 ```bash
 ./synthesize.sh
@@ -145,11 +150,10 @@ mature sub-micron standard-cell process is ≈ 0.08–0.16 ns):
 | 0.12 ns | 10.8 ns | ≈ 93 MHz |
 | 0.16 ns | 14.4 ns | ≈ 69 MHz |
 
-**Headline: ≈ 70–140 MHz (generic standard-cell estimate).** On a 7-series FPGA
-the ripple-carry adder maps onto the dedicated carry chain rather than 69 LUT
-levels, so an FPGA Fmax is usually set by the memory-read path and tends to land
-higher than this conservative gate-level estimate. These are engineering
-estimates, not timing closure.
+**Illustrative range: ≈ 70–140 MHz under the stated delay assumptions.**
+This is not measured Fmax and does not predict any particular FPGA or ASIC.
+The block-depth sum omits instruction-ROM delay, clock-to-Q, setup, routing,
+and fanout; independently mapped maxima need not form one realizable path.
 
 ### Authoritative Fmax (Vivado flow)
 

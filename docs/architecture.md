@@ -41,8 +41,8 @@ the decoder outputs, simulation commands and expected results.
 
 ## Full 10-instruction datapath
 
-The [prototype video](../README.md#prototype-video) walks through the datapath
-and shows the full-core simulation.
+The [integration guide](phase2_integration_guide.md) explains the datapath
+and the full-core simulation.
 
 [rv32i_core](../rtl/rv32i_core.v), wrapped by
 [rv32i_top](../rtl/rv32i_top.v), wires every block together,
@@ -72,6 +72,6 @@ and the final `FULL RV32I CPU TEST PASSED` banner:
 
 ![Full CPU integration test passing all register and memory checks](figures/full-cpu-test-pass.png)
 
-Generic Yosys synthesis of this core reports 22,445 cells and 9,248 flip-flops
+The recorded submission synthesis reported 22,445 cells and 9,248 flip-flops
 with no inferred latches. See [synthesis statistics](synthesis.md) for the full
 per-module and cell-type tables.

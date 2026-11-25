@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-for tool in verilator yosys iverilog vvp; do
+for tool in verilator yosys iverilog vvp python3; do
     if ! command -v "$tool" >/dev/null 2>&1; then
         printf 'ERROR: %s is required.\n' "$tool" >&2
         exit 1
@@ -20,14 +20,14 @@ RTL_FILES=(
     rtl/branch_target.v rtl/next_pc_mux.v rtl/rv32i_core.v rtl/rv32i_top.v
 )
 
-printf '[1/4] Verilator lint\n'
+printf '[1/5] Verilator lint\n'
 verilator --lint-only -Wall --top-module rv32i_top "${RTL_FILES[@]}"
 
-printf '[2/4] ALU integration simulation\n'
+printf '[2/5] ALU integration simulation\n'
 bash scripts/run_alu_integration.sh > build/synthesis/alu_integration.log
 grep 'ALU INTEGRATION TEST PASSED' build/synthesis/alu_integration.log
 
-printf '[3/4] Yosys synthesis and netlist generation\n'
+printf '[3/5] Yosys synthesis and netlist generation\n'
 yosys -Q -l build/synthesis/yosys.log -p "
     read_verilog -DSYNTHESIS ${RTL_FILES[*]};
     hierarchy -check -top rv32i_core;
@@ -37,7 +37,7 @@ yosys -Q -l build/synthesis/yosys.log -p "
     write_verilog -noattr netlist/rv32i_core_netlist.v;
 " > /dev/null
 
-printf '[4/4] Generic logic-depth analysis\n'
+printf '[4/5] Generic logic-depth analysis\n'
 : > build/synthesis/logic_depth.txt
 for top in alu alu_control register_file data_memory writeback_mux \
            branch_target next_pc_mux immediate_generator control_unit; do
@@ -72,6 +72,9 @@ done
     printf 'library, placement, routing, and static timing constraints are required\n'
     printf 'for a technology-specific maximum clock frequency.\n'
 } > synthesis_report.txt
+
+printf '[5/5] ROM, netlist, demo, and failure-path acceptance\n'
+python3 scripts/check_acceptance.py
 
 printf '\nPASS: lint, simulation, synthesis, and structural checks completed.\n'
 printf 'Report: %s/synthesis_report.txt\n' "$ROOT_DIR"

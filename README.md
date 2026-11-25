@@ -11,9 +11,9 @@ The main demonstration computes **3 + 2 + 1**, stores the result **6** at byte a
 | Directed assembly workloads | 6 programs |
 | Branch-program execution | 92 checked steps, 955 checks |
 | Final whole-state test | 23 instruction steps |
-| Generic synthesis | 22,445 cells, 9,248 flip-flops |
+| Generic synthesis | 22,531 cells, 9,248 flip-flops |
 
-[Final IEEE report (PDF)](docs/final_project_report.pdf) · [Editable report (LaTeX)](docs/final_project_report.tex) · [Presentation](docs/final_presentation.pptx) · [Verification report](docs/verification_report.md) · [Recorded logs, traces and waveforms](docs/verification_evidence.zip)
+[Recorded submission report (PDF)](docs/final_project_report.pdf) · [Editable report (LaTeX)](docs/final_project_report.tex) · [Presentation](docs/final_presentation.pptx) · [Verification report](docs/verification_report.md) · [Recorded logs, traces and waveforms](docs/verification_evidence.zip)
 
 ## Contents
 
@@ -97,7 +97,7 @@ flowchart LR
 |---|---|
 | Instruction subset | ADD, SUB, AND, OR, XOR, ADDI, LW, SW, BEQ, BNE |
 | Phase 2 execution | [rv32i_core](rtl/rv32i_core.v) integrates 12 blocks. [rv32i_top](rtl/rv32i_top.v) exposes the PC, instruction and completion signal. |
-| Storage | 32 registers of 32 bits with x0 fixed at zero. The core defaults to 64 instruction words and 256 data words. Memories use byte addresses. |
+| Storage | 32 registers of 32 bits with x0 fixed at zero. The core defaults to 22 instruction words and 256 data words. Memories use byte addresses. |
 | State updates | Rising edges commit the PC and enabled writes. Word loads read RAM combinationally. Reset sets PC to zero and suppresses register and RAM writes. |
 | Control flow | Sequential PC is PC + 4. A taken branch selects the branch instruction's PC plus its signed byte offset. Programs end with a self-branch observed by the wrapper. |
 | Phase 1 baseline | The [arithmetic core](rtl/rv32i_phase1_core.v) and its original tests are retained. The final regression includes these earlier suites. |
@@ -178,12 +178,12 @@ These workflows can be run independently of the simulation regression.
 
 | Generic synthesis result | Value |
 |---|---:|
-| Total cells | 22,445 |
+| Total cells | 22,531 |
 | Enabled flip-flops | 9,216 |
 | Resettable PC flip-flops | 32 |
-| Multiplexers | 9,543 |
+| Multiplexers | 9,545 |
 | ALU block depth | 69 generic logic levels |
-| Branch-target block depth | 62 generic logic levels |
+| Branch-target block depth | 57 generic logic levels |
 
 The single-cycle organization has a fixed **CPI of 1** for supported instructions. Its clock period must cover the slowest instruction. The load path includes register read, address addition, data-memory read, writeback selection, and register setup within the same cycle.
 
@@ -236,10 +236,31 @@ Important entry points:
 
 ## Project documents
 
-- [Final report](docs/final_project_report.pdf) and [editable IEEE LaTeX](docs/final_project_report.tex)
+- [Recorded submission report](docs/final_project_report.pdf) and [editable IEEE LaTeX](docs/final_project_report.tex)
 - [Final presentation](docs/final_presentation.pptx)
 - [Verification methodology and demonstration sequence](docs/verification_report.md)
 - [Architecture and control](docs/architecture.md)
 - [Synthesis resource analysis](docs/synthesis.md)
 - [Phase 1 IEEE report](docs/phase1-report.pdf) and [source](docs/phase1-report.tex)
 - [Prototype video](https://drive.google.com/file/d/1h3wr6jaVHCT1d3m6KTbqFU8Jfo3WYwjh/view) and [project video folder](https://drive.google.com/drive/folders/1daOmAHnOrNh-L1YhrbRlE5GaWKV3XGjL?usp=sharing)
+
+## Corrections after the recorded submission
+
+The PDF, LaTeX, slides, waveform gallery and submission evidence archive record
+the original submission. Current RTL uses the 22-word mixed program by default;
+the regenerated netlist and synthesis_report.txt describe this corrected build.
+See [correction status](docs/corrections.txt) for resolved audit findings and the
+remaining target-specific timing requirement.
+
+Run `python3 scripts/check_acceptance.py` after synthesis to check partial and
+empty ROMs against synthesized implementations, default demo completion, the
+committed core netlist trace, and rejection of incorrect SUB and completion timeout.
+`./synthesize.sh` includes this check. GitHub Actions runs the regression, assembly
+image check, lint, synthesis and acceptance checks on pushes and pull requests.
+
+Instruction-memory capacity and image length are separate: `INIT_WORDS` on
+`instruction_memory` gives the file's word count (default four for test_program.hex).
+Core wrappers expose `IMEM_WORDS`, defaulting to `IMEM_DEPTH`. To put the mixed
+program in a larger ROM, set `IMEM_DEPTH=64`, `IMEM_WORDS=22`, and
+`IMEM_INIT_FILE="programs/integration.hex"`. Addresses beyond the loaded words
+return NOP in both RTL and synthesis. Empty files use `IMEM_INIT_FILE=""`.

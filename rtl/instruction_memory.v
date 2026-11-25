@@ -5,7 +5,8 @@
 // so a word-aligned address selects memory word address[31:2].
 module instruction_memory #(
     parameter DEPTH = 256,
-    parameter INIT_FILE = "programs/test_program.hex"
+    parameter INIT_FILE = "programs/test_program.hex",
+    parameter INIT_WORDS = (DEPTH < 4) ? DEPTH : 4
 ) (
     input  wire [31:0] address,
     output reg  [31:0] instruction
@@ -22,21 +23,15 @@ module instruction_memory #(
         (DEPTH == 1) ? {ADDR_WIDTH{1'b0}} : address[ADDR_WIDTH+1:2];
     wire [31:0] selected_word = memory[word_index];
 
-    // Initialize unused locations to NOP, then load the program image.
-    //
-    // The fill loop is simulation-only.  Some synthesis tools flatten initial
-    // memory writes without preserving their procedural ordering and can let
-    // this default fill overwrite the later $readmemh contents.  Excluding the
-    // fill during synthesis leaves the program image as the sole ROM
-    // initialization source while retaining deterministic NOPs in simulation.
+    // INIT_WORDS is the number of words in INIT_FILE, independent of capacity.
+    // Never expose uninitialized synthesis locations as executable instructions.
+    // For an empty image the entire ROM is NOP in both simulation and synthesis.
     initial begin
-`ifndef SYNTHESIS
-        for (i = 0; i < DEPTH; i = i + 1)
-            memory[i] = NOP;
-`endif
-
-        if (INIT_FILE != "")
-            $readmemh(INIT_FILE, memory);
+        if (INIT_FILE == "") begin
+            for (i = 0; i < DEPTH; i = i + 1) memory[i] = NOP;
+        end else begin
+            $readmemh(INIT_FILE, memory, 0, INIT_WORDS-1);
+        end
     end
 
     // Combinational read: instruction is available from the current PC.
@@ -44,7 +39,8 @@ module instruction_memory #(
         if (address[1:0] != 2'b00)
             instruction = NOP; // RV32I instructions must be 4-byte aligned here.
         else if ({2'b00, address[31:2]} < DEPTH)
-            instruction = selected_word;
+            instruction = (INIT_FILE != "" && {2'b00, address[31:2]} >= INIT_WORDS)
+                ? NOP : selected_word;
         else
             instruction = NOP; // Deterministic result for out-of-range fetches.
     end

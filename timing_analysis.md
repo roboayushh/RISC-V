@@ -90,10 +90,10 @@ sub-micron standard-cell process):
 | 0.12 ns | 10.8 ns | ≈ 93 MHz |
 | 0.16 ns | 14.4 ns | ≈ 69 MHz |
 
-**Headline: ≈ 70–140 MHz (generic estimate, not timing closure.)** On a 7-series
-FPGA the ripple-carry adder maps to the dedicated carry chain rather than 69 LUT
-levels, so a real FPGA Fmax is usually set by the memory-read path and tends to
-be higher than this conservative estimate.
+**Illustrative range: ≈ 70–140 MHz under the stated delay assumptions.**
+This is not measured Fmax and does not predict any particular FPGA or ASIC.
+The block-depth sum omits instruction-ROM delay, clock-to-Q, setup, routing,
+and fanout; independently mapped maxima need not form one realizable path.
 
 For the authoritative vendor number, run the Vivado flow in
 [`docs/synthesis.md`](docs/synthesis.md#authoritative-fmax-vivado-flow):

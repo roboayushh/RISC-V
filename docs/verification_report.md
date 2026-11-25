@@ -48,4 +48,8 @@ The [annotated machine-code image](../programs/final_verification.hex) runs on t
 
 ## Synthesis provenance and scope
 
-The [committed synthesis report](../synthesis_report.txt) records Verilator lint PASS, Yosys structural PASS, 22,445 generic cells, 9,216 enabled flip-flops, 32 PC flip-flops and 9,543 mux cells. The ALU and branch-target blocks have longest generic topological paths of 69 and 62 levels. The [timing analysis](../timing_analysis.md) explains the load-path risk and the technology mapping needed to estimate frequency. These figures come from Ayush's synthesis run. The M14 regression reruns RTL simulations. The live team demonstration remains a presentation activity.
+The original submission synthesis recorded Verilator lint PASS, Yosys structural PASS, 22,445 generic cells, 9,216 enabled flip-flops, 32 PC flip-flops and 9,543 mux cells. The ALU and branch-target blocks have longest generic topological paths of 69 and 62 levels. The [timing analysis](../timing_analysis.md) explains the load-path risk and the technology mapping needed to estimate frequency. These figures come from Ayush's synthesis run. The M14 regression reruns RTL simulations. The live team demonstration remains a presentation activity.
+
+
+For changes after this recorded run, see [correction status](corrections.txt).
+The regenerated synthesis report describes the corrected default program.

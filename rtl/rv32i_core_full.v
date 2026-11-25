@@ -16,9 +16,10 @@
 // mux can select between PC+4 and the branch target.
 // =============================================================================
 module rv32i_core_full #(
-    parameter IMEM_DEPTH      = 64,
+    parameter IMEM_DEPTH      = 11,
     parameter IMEM_INIT_FILE  = "programs/full_demo.hex",
-    parameter DMEM_DEPTH      = 256
+    parameter DMEM_DEPTH      = 256,
+    parameter IMEM_WORDS = IMEM_DEPTH
 ) (
     input  wire        clk,
     input  wire        reset,
@@ -41,7 +42,8 @@ module rv32i_core_full #(
 
     instruction_memory #(
         .DEPTH     (IMEM_DEPTH),
-        .INIT_FILE (IMEM_INIT_FILE)
+        .INIT_FILE (IMEM_INIT_FILE),
+        .INIT_WORDS(IMEM_WORDS)
     ) imem (
         .address     (pc_current),
         .instruction (instruction)

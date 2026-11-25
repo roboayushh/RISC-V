@@ -138,6 +138,7 @@ module tb_rv32i_integration;
         $display("[EXEC]  Running program...");
         while (!halted && cycle_count < 100) begin
             @(posedge clk);
+            #1;
             cycle_count = cycle_count + 1;
         end
 
@@ -145,7 +146,7 @@ module tb_rv32i_integration;
             $display("[EXEC]  Processor halted after %0d cycles (PC = 0x%08h).",
                      cycle_count, pc);
         else
-            $display("[EXEC]  WARNING: Timeout after %0d cycles! PC = 0x%08h",
+            $fatal(1, "Timeout after %0d cycles! PC = 0x%08h",
                      cycle_count, pc);
         $display("");
 
@@ -215,6 +216,7 @@ module tb_rv32i_integration;
         $display("=============================================================");
         $display("");
 
+        if (errors != 0) $fatal(1, "Integration checks failed");
         $finish;
     end
 

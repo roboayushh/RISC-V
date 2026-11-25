@@ -178,6 +178,7 @@ module tb_memory_integration;
         $display("=============================================================");
         $display("");
 
+        if (errors != 0) $fatal(1, "Integration checks failed");
         $finish;
     end
 
