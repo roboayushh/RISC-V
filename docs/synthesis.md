@@ -155,21 +155,36 @@ This is not measured Fmax and does not predict any particular FPGA or ASIC.
 The block-depth sum omits instruction-ROM delay, clock-to-Q, setup, routing,
 and fanout; independently mapped maxima need not form one realizable path.
 
-### Authoritative Fmax (Vivado flow)
+### Routed core timing on the selected Artix-7 target
 
-For a vendor-accurate number, run the suggested FPGA flow and read the timing
-report. Set a target clock, implement, and inspect the worst negative slack
-(WNS); achievable Fmax = `1 / (T_target − WNS)`:
+The selected part is `xc7a35tcpg236-1` and the top is `rv32i_top`.
+On a machine with licensed Vivado and Artix-7 support, source Vivado's settings,
+then run from the repository root:
 
-```tcl
-# Vivado (e.g. Artix-7 xc7a35t). rv32i_top is the synthesis top.
-read_verilog [glob rtl/*.v]
-synth_design -top rv32i_top -part xc7a35tcpg236-1
-create_clock -name clk -period 20.000 [get_ports clk]   ;# 50 MHz target
-opt_design; place_design; route_design
-report_timing_summary -file build/logs/vivado_timing.rpt
-# Fmax = 1 / (20 ns - WNS)
+```bash
+bash scripts/run_vivado_timing.sh 20.0
 ```
 
-See [comparison.md](comparison.md) for how CPI, clock period and Fmax trade off
-against multi-cycle and pipelined baselines.
+The Tcl flow synthesizes out of context, places and routes the current core,
+and writes utilization, DRC, route status, timing checks, detailed setup/hold
+paths and a routed checkpoint under `build/vivado/`. It characterizes the
+existing asynchronous-memory implementation. Mapping to synchronous BRAM is
+an optional architectural change requiring new load-cycle verification, not
+an automatic prerequisite for reporting this implementation's timing.
+
+`core_timing.txt` records the part, Vivado version, clock period and worst core
+register-to-register setup/hold slack. It derives a setup frequency bound using
+`1000 / (period_ns - setup_slack_ns)`. This is a bound from one routed result.
+Rerun at the selected period and inspect both setup and hold before claiming
+closure at that frequency. A run with negative core setup or hold slack fails.
+
+Out-of-context characterization does not assign board pins or establish an
+external reset/output timing budget. Inspect `check_timing.rpt`, DRC and route
+status; unconstrained ports do not establish full board-level timing closure.
+No bitstream or hardware demonstration is produced by this flow. No device
+frequency is claimed until Vivado has actually generated and reviewed reports.
+The script has not been executed here because Vivado is unavailable.
+
+Command references: [AMD all_registers](https://docs.amd.com/r/2025.1-English/ug835-vivado-tcl-commands/all_registers),
+[AMD get_timing_paths](https://docs.amd.com/r/2023.2-English/ug835-vivado-tcl-commands/get_timing_paths),
+and [AMD synth_design](https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands/synth_design).

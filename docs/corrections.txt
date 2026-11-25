@@ -21,7 +21,9 @@ Resolved
 5. The comparison labels timing estimates, removes the measured-result claim,
    and compares throughput using CPI and clock period. Device Fmax predictions
    unsupported by a target implementation were removed from the timing notes.
-6. The missing video anchor now points to the integration guide. A GitHub Actions
+6. Branch-test name and file parameters now use explicit packed-string widths
+   for compatibility with the Icarus 12 simulator supplied by Ubuntu.
+7. The missing video anchor now points to the integration guide. A GitHub Actions
    workflow runs regression, assembly-image checks, module checks, synthesis,
    and behavioral acceptance on pushes and pull requests.
 
@@ -56,11 +58,11 @@ consumers. They are not removed merely because they cover earlier phases.
 Remaining requirement
 
 Measured maximum operating frequency and physical FPGA implementation remain
-unverified. No FPGA device/board, target timing library, or implementation
-constraints were supplied; Vivado, nextpnr and OpenSTA are unavailable locally.
+unverified. The selected target is now xc7a35tcpg236-1 using Vivado, consistent with the
+existing example in docs/synthesis.md. However, Vivado, nextpnr and OpenSTA are unavailable locally.
 The 70-140 MHz calculation is an illustrative assumption-based range, not a
 substitute for target-specific static timing. CPI=1 is a verified architectural
-property, not proof of the maximum clock rate. A device/board and timing flow
-must be specified to complete that requirement. A live demonstration also needs
+property, not proof of the maximum clock rate. The prepared timing flow is scripts/run_vivado_timing.sh. It has not been
+executed in Vivado here. A live demonstration also needs
 to be performed by the team; source files and passing simulations do not certify
 that it has occurred.

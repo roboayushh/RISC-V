@@ -6,13 +6,14 @@
 // of the DUT. Every architectural check occurs after nonblocking writes settle.
 module tb_branch_integration;
     parameter PROGRAM_ID = 0;
-    localparam PROGRAM_NAME =
+    // Explicit packed strings work with Icarus 12 as well as newer versions.
+    localparam [8*32-1:0] PROGRAM_NAME =
         (PROGRAM_ID == 0) ? "arithmetic" :
         (PROGRAM_ID == 1) ? "memory" :
         (PROGRAM_ID == 2) ? "branch_equal" :
         (PROGRAM_ID == 3) ? "branch_not_equal" :
         (PROGRAM_ID == 4) ? "integration" : "branch_offsets";
-    localparam PROGRAM_FILE =
+    localparam [8*64-1:0] PROGRAM_FILE =
         (PROGRAM_ID == 0) ? "programs/arithmetic.hex" :
         (PROGRAM_ID == 1) ? "programs/memory.hex" :
         (PROGRAM_ID == 2) ? "programs/branch_equal.hex" :
