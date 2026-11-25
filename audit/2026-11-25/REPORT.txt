@@ -1,0 +1,214 @@
+RISC-V repository audit
+25 November 2026
+
+Verdict
+
+The ten-instruction RTL subset passes the existing regression and additional
+independent state checks. The repository is not issue-free: its committed
+synthesized implementation disagrees with RTL, and parts of its test harness
+can report success incorrectly. These issues prevent an unconditional sign-off.
+
+Scope and baseline
+
+Audited baseline (local HEAD and GitHub main at review time):
+75b9c77c50b36b3d9f3b8b1701fbcbf08d45940f
+https://github.com/roboayushh/RISC-V/commit/75b9c77c50b36b3d9f3b8b1701fbcbf08d45940f
+
+The review covered the 16 RTL modules, 21 testbench sources, 14 shell scripts,
+assembly/image consistency, synthesized netlist behavior, Markdown guides,
+LaTeX report sources, both PDF report files, presentation contents, and archived
+verification evidence. Production RTL, tests, reports, and netlist were not edited.
+Audit source files are retained in audit/2026-11-25/. Generated outputs and
+disposable mutations remain under ignored build/audit/.
+
+Confirmed findings
+
+1. HIGH: Synthesized instruction ROM does not preserve RTL NOP padding
+
+Location: rtl/instruction_memory.v:25-39, synthesize.sh:31-37.
+The RTL fills unused instruction words with NOP only when SYNTHESIS is absent.
+The default core allocates 64 words but full_demo.hex supplies only 11 words.
+Unspecified words become synthesis don't-cares. Optimization can choose actual
+supported instructions for those words.
+
+Reproduction against the committed netlist, same clock/reset and default params:
+  RTL:     TRACE 9 0000002c 00000013
+  NETLIST: TRACE 9 0000002c 00500413
+
+At PC 0x2c, RTL executes NOP while the netlist executes ADDI x8,x0,5. At later
+addresses the netlist repeats earlier instructions, including stores and branches.
+This is a functional simulation/synthesis discrepancy, not tool-version drift.
+Fresh synthesis also leaves these locations unspecified. The synthesis flow
+reports PASS because lint and structural checks do not check functional equality.
+
+Required correction: establish identical defined ROM contents for simulation and
+synthesis for every permitted address. A fully padded image, or a redesigned
+initialization/valid-word scheme accepted by the synthesis flow, can establish
+that contract. Validate empty and partially filled images and compare RTL with
+the synthesized implementation. Regenerate the netlist and affected statistics.
+
+Evidence: rtl_trace.log, netlist_trace.log, fresh_netlist_trace.log, tb_trace.v.
+
+2. MEDIUM: Two standalone integration runners exit zero after detected failures
+
+Locations: testbench/tb_rv32i_integration.v:208-218;
+testbench/tb_memory_integration.v:174-181;
+scripts/run_phase2_integration.sh:52;
+scripts/run_memory_integration.sh:52.
+
+Changing SUB to ADD in a disposable RTL copy produced six failed integration
+checks and five failed memory checks. Both scripts printed TEST FAILED but
+returned exit status 0 because the benches finish normally and the scripts do
+not require a passing marker. Shell set -e cannot detect this logical failure.
+
+The aggregate run_tests.sh catches the printed failures. Thus this finding
+affects the documented standalone workflows, not the aggregate baseline result.
+
+Required correction: use $fatal(1) for failed comparisons and unsuccessful final
+summaries; make standalone runners require completion and propagate failures.
+
+Evidence: fault_sub_run_phase2_integration.sh.log,
+fault_sub_run_memory_integration.sh.log, reproduced_findings.json.
+
+3. MEDIUM: Integration timeout still permits a PASS result
+
+Location: testbench/tb_rv32i_integration.v:139-149,208-218.
+
+Forcing the wrapper's successful halt observation low in a disposable copy gives:
+  [EXEC] WARNING: Timeout after 100 cycles! PC = 0x00000060
+  PHASE 2 INTEGRATION TEST PASSED
+  exit status: 0
+
+The timeout only prints a warning; it never increments errors or calls $fatal.
+The aggregate runner also treats this suite as passed because WARNING is not
+a failure marker. Other branch/ALU suites may detect the same wrapper mutation;
+that does not make this integration bench's acceptance condition correct.
+
+Required correction: fail immediately when the cycle budget expires without
+halted, and sample completion after nonblocking state updates have settled.
+
+Evidence: fault_halt.log, reproduced_findings.json.
+
+4. MEDIUM: Default wrapper configuration does not run or complete the advertised demo
+
+Locations: rtl/rv32i_top.v:29-32; rtl/rv32i_core.v:43-46;
+programs/full_demo.hex; README.md:5; docs/final_project_report.tex:75.
+
+The default image is the older 10+20 workload. A default rv32i_top instance was
+run for 1,000 execution cycles. It produced x4=30, RAM word 16=0, and zero
+assertions of halted; PC reached 0x0fa8. The image contains no terminal self-branch.
+It therefore does not demonstrate 3+2+1=6 at byte address 64 as the README's main
+example describes. A bench waiting solely for halted on the default configuration
+will continue waiting. The explicitly configured mixed assembly test does pass.
+
+Required correction: provide one documented runnable configuration for the mixed
+demo, and align the wrapper default or the advertised default behavior with it.
+If the legacy image remains the default, document its finite testbench budget
+and absence of a completion marker. Label report encoding examples with their
+actual program image.
+
+Evidence: default.log, tb_reset_default.v.
+
+5. MEDIUM: Architecture comparison overstates timing evidence and generalizes throughput
+
+Locations: docs/comparison.md:5-6,16-18,22;
+docs/synthesis.md:124-151; timing_analysis.md:73-96.
+
+The comparison calls the single-cycle numbers measured results, but its 90-level
+path is a sum of independently mapped block maxima and assumed mux depths. The
+70-140 MHz interval uses assumed delays per level. The final IEEE report explains
+this distinction correctly; the comparison should use the same qualification.
+The 90-level table entry also labels a fetch-to-writeback path while its sum omits
+instruction-ROM delay. Claims that FPGA Fmax generally exceeds this estimate lack
+a target implementation. The table's general claim of lower multi-cycle
+throughput does not follow from CPI alone because its clock period also changes.
+The current core uses separate instruction and data memories, so the single
+"one memory port" description is ambiguous.
+
+Required correction: call the numbers illustrative estimates, state the omitted
+timing terms, compare execution time using both CPI and clock period, and remove
+unmeasured device-performance claims. Preserve the report's distinction between
+functional simulation, generic gate counts, and physical timing.
+
+6. LOW: Broken documentation anchor and no automated GitHub checks
+
+docs/architecture.md:44 links to README.md#prototype-video, which no longer exists.
+The local tree has no .github/workflows configuration. GitHub Actions returned
+total_count=0 for this repository. This is a verification infrastructure gap,
+not a demonstrated CPU execution bug. Add regression checks on pushes and PRs
+and repair the dead link. A CI pass should include the corrected negative tests.
+
+Successful checks
+
+- ./run_tests.sh: 11 suites passed, 0 failed.
+- bash scripts/build_branch_programs.sh --check: all six assembly/image pairs match.
+- bash scripts/check_phase1_rtl.sh: all 16 modules pass Verilator lint, Yosys
+  synthesis, latch selection, and structural checks.
+- ./synthesize.sh in a disposable copy: PASS. Fresh generic count 22,457 cells;
+  9,248 flip-flops. Fresh branch-target depth 57 levels, ALU depth 69.
+  Committed counts 22,445 and branch-target depth 62 were produced with an older
+  Yosys version. These tool-dependent count differences alone are not a defect.
+- bash -n: all 14 shell scripts pass syntax checks.
+- Independent decoder enumeration: all 131,072 opcode/funct3/funct7 combinations
+  match the ten-instruction contract. This does not enumerate all machine states.
+- Four deterministic generated workloads: 25,351 executed instructions on each
+  of rv32i_core and rv32i_core_full, 50,702 total instruction executions.
+  Python independently decoded the images and predicted PC, all 32 registers,
+  and all 17 data-memory words after every executed instruction. All comparisons
+  pass. The non-power-of-two RAM depth also exercises range/index behavior.
+  Each core executed 4,274 unsupported words, 395 valid loads, 382 valid stores,
+  1,741 invalid loads, and 1,775 invalid stores. Both outcomes of both branches
+  were exercised. These generated branches are forward; existing directed
+  branch tests cover backward loops and displacement boundaries.
+- Additional reset test: pending register/store writes are suppressed during
+  reset; warm reset retains arrays and returns PC to zero; execution resumes.
+- Repeated the report's ORI decoder mutation: exactly 9 suites pass and 2 fail,
+  with a failing aggregate exit status.
+- Archived evidence ZIP passes integrity checks. All six archived CSV traces
+  exactly match fresh runs. Archive has the documented 17 logs and 26 VCD files.
+- Final report: all 12 PDF pages rendered and visually inspected. No obvious
+  clipping or unresolved citation placeholders observed. LaTeX citation keys
+  resolve. Recorded arithmetic, PC routes, memory effects, and fault result
+  agree with fresh simulation. Literature/contribution sections are present.
+- Presentation: text and embedded-object contents inspected across eight slides;
+  106 object bounds checked without off-canvas boxes. Content matches recorded
+  evidence. See visual-review limitation below.
+
+Reproduction
+
+From the repository root, with Python 3 and the Verilog tools on PATH:
+  ./run_tests.sh
+  bash scripts/build_branch_programs.sh --check
+  python3 audit/2026-11-25/stress.py
+  python3 audit/2026-11-25/reproduce_findings.py
+
+The last command succeeds when it reproduces the documented failures in
+disposable copies. It is an audit reproducer, not an issue-free acceptance test.
+It writes reproduced_findings.json and fault logs. Individual simulator sources
+and RTL/netlist traces remain under build/audit/. Stress coverage totals are in
+random_coverage.json and full output is in stress.log.
+
+Tools
+
+Icarus Verilog 13.0; Verilator 5.054; Yosys 0.71+post (5628c1324);
+GNU RISC-V Binutils 2.47.20260726; Python 3; macOS PDFKit for PDF rendering.
+The tracked synthesis report records Yosys 0.70+post (0c11ea098).
+
+Verification limits
+
+This audit provides concrete simulation, synthesis, and document evidence. It
+does not establish full RV32I compliance, exhaustive architectural correctness,
+or timing closure. The project deliberately supports only ten instructions and
+has no exception/interrupt/CSR implementation. Misaligned and invalid accesses
+follow its documented fallback policy rather than a trap implementation.
+
+No FPGA/ASIC target flow, physical timing, or hardware execution was available.
+The existing PDF was rendered; rebuilding LaTeX was not verified because a TeX
+engine was unavailable. Presentation XML and bounds were checked, but full slide
+rendering was unavailable: the installed LibreOffice conversion exited 134,
+and Quick Look was blocked by its sandbox initialization. PPTX text-box bounds
+alone do not prove that every font renders or every line fits in PowerPoint.
+
+Processor RTL and existing deliverables remain unchanged. Fixes require
+implementation and rerunning
+the failing reproductions as acceptance tests before claiming issue-free status.
