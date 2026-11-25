@@ -21,8 +21,8 @@ Resolved
 5. The comparison labels timing estimates, removes the measured-result claim,
    and compares throughput using CPI and clock period. Device Fmax predictions
    unsupported by a target implementation were removed from the timing notes.
-6. Branch-test name and file parameters now use explicit packed-string widths
-   for compatibility with the Icarus 12 simulator supplied by Ubuntu.
+6. The branch runner passes literal program names and filenames, avoiding
+   conditional-string parameter evaluation differences for compatibility with the Icarus 12 simulator supplied by Ubuntu.
 7. The missing video anchor now points to the integration guide. A GitHub Actions
    workflow runs regression, assembly-image checks, module checks, synthesis,
    and behavioral acceptance on pushes and pull requests.

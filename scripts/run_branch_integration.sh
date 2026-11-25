@@ -25,6 +25,8 @@ for program_id in "${!programs[@]}"; do
     executable="build/branch/$program"
     iverilog -g2005 -Wall -s tb_branch_integration \
         -P "tb_branch_integration.PROGRAM_ID=$program_id" \
+        -P "tb_branch_integration.PROGRAM_NAME=\"$program\"" \
+        -P "tb_branch_integration.PROGRAM_FILE=\"programs/$program.hex\"" \
         -o "$executable" "${rtl_sources[@]}" testbench/tb_branch_integration.v
     vvp "$executable" | tee "build/branch/$program.log"
     if ! grep -Fq "BRANCH PROGRAM PASSED: $program (" "build/branch/$program.log"; then
