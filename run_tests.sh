@@ -25,6 +25,7 @@ run_suite() {
         fi
     fi
     printf 'FAIL  %s  (see %s)\n' "$name" "$log"
+    tail -n 40 "$log"
     failed=$((failed + 1))
 }
 
