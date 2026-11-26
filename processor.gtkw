@@ -1,0 +1,57 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Thu Nov 26 11:34:38 2026
+[*]
+[dumpfile] "/Users/luffy/Desktop/Newton projects/mca project/RISC-V/build/branch/integration.vcd"
+[dumpfile_mtime] "Thu Nov 26 11:23:05 2026"
+[dumpfile_size] 8014
+[savefile] "/Users/luffy/Desktop/Newton projects/mca project/RISC-V/processor.gtkw"
+[timestart] 0
+[size] 1920 1080
+[pos] -1 -31
+*0.000000 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] tb_branch_integration.
+[treeopen] tb_branch_integration.dut.
+[sst_width] 255
+[signals_width] 202
+[sst_expanded] 1
+[sst_vpaned_height] 119
+@28
+tb_branch_integration.dut.u_core.clk
+tb_branch_integration.dut.u_core.reset
+@22
+tb_branch_integration.dut.u_core.pc_current[31:0]
+tb_branch_integration.dut.u_core.instruction[31:0]
+tb_branch_integration.dut.u_core.opcode[6:0]
+@28
+tb_branch_integration.dut.u_core.funct3[2:0]
+@22
+tb_branch_integration.dut.u_core.funct7[6:0]
+@28
+tb_branch_integration.dut.u_core.ALUOp[1:0]
+tb_branch_integration.dut.u_core.ALUSrc
+tb_branch_integration.dut.u_core.alu_operation[2:0]
+@22
+tb_branch_integration.dut.u_core.reg_data1[31:0]
+tb_branch_integration.dut.u_core.reg_data2[31:0]
+tb_branch_integration.dut.u_core.imm_ext[31:0]
+tb_branch_integration.dut.u_core.alu_operand_b[31:0]
+tb_branch_integration.dut.u_core.alu_result[31:0]
+@28
+tb_branch_integration.dut.u_core.zero
+tb_branch_integration.dut.u_core.MemRead
+tb_branch_integration.dut.u_core.MemWrite
+tb_branch_integration.dut.u_core.ResultSrc
+@22
+tb_branch_integration.dut.u_core.write_back_data[31:0]
+@28
+tb_branch_integration.dut.u_core.Branch
+tb_branch_integration.dut.u_core.branch_taken
+@22
+tb_branch_integration.dut.u_core.branch_addr[31:0]
+@28
+tb_branch_integration.dut.u_core.PCSrc
+@22
+tb_branch_integration.dut.u_core.next_pc_wire[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
